@@ -1,30 +1,28 @@
-'''
-Author: dengshiqi shiqideng@genome.cn
-Date: 2024-05-16 11:40:34
-LastEditors: dengshiqi shiqideng@genome.cn
-LastEditTime: 2024-05-17 14:06:43
-FilePath: \dataprocess\test.py
-Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
-'''
-from PySide6.QtGui import QStandardItemModel, QStandardItem
-
-def createModel(path: str) -> QStandardItemModel:
-    """
-    :param path: 文件路径
-    :return: QStandardItemModel
-    """
-    # 初始化模型
-    model = QStandardItemModel()
-    # 初始化表格数据
-    data = pd.read_csv(path)
-    rows, columns = data.shape
-    # 设置model表头
-    model.setHorizontalHeaderLabels(list(data.columns))
-    for row in range(rows):
-        for col in range(columns):
-            item = QStandardItem(str(data.iloc[row][col]))
-            model.setItem(row, col, item)
-
-    model.setColumnCount(columns)
-    model.setRowCount(rows)
-    return model
+from PySide6.QtWidgets import QApplication, QMessageBox, QPushButton
+from PySide6.QtCore import Slot
+ 
+def show_message_box_and_get_button_click():
+    app = QApplication([])
+ 
+    # 创建一个消息框
+    message_box = QMessageBox(QMessageBox.Information, "Message Box Title", "Message Box Text")
+    message_box.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
+ 
+    # 连接按钮点击信号到槽函数
+    message_box.buttonClicked.connect(handle_button_click)
+ 
+    # 显示消息框
+    message_box.exec()
+ 
+    # 应用运行
+    app.exec()
+ 
+@Slot(QPushButton)
+def handle_button_click(button):
+    if button.text() == "Yes":
+        print("Ok button clicked")
+    elif button.text() == "Cancel":
+        print("Cancel button clicked")
+ 
+if __name__ == "__main__":
+    show_message_box_and_get_button_click()
