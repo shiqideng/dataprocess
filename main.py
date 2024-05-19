@@ -1,25 +1,28 @@
 # 标准库
 import sys
+import os
 import glob
-
+from configparser import ConfigParser
 
 # 第三方库
-from PySide6.QtWidgets import QApplication,  QWidget, QFileDialog, QTableWidget, QTableWidgetItem
-from PySide6.QtCore import QStandardPaths, Slot
+from PySide6.QtWidgets import QApplication,  QWidget, QFileDialog, QMessageBox, QAbstractButton
+from PySide6.QtCore import QStandardPaths, Slot, Signal
 from PySide6.QtGui import QStandardItemModel, QStandardItem
 import pandas as pd
 
 # 本地包
 from UI.Ui_MainWindow import Ui_Form
 from DataOperation import Module
-import test
+
 
 class MainWindow(QWidget, Ui_Form):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.setupUi(self)
+        self.config = ConfigParser()
+        self.config.read("config.ini", encoding="utf-8")
         # self.tabWidget.setTabEnabled(2, False)
-        self.Import5400FilePathLineEdit.setText(r"C:\Users\shiqideng\OneDrive\桌面\test\5400\RNA\20240321")
+        self.getSystem()
         self.run()
 
     def run(self):
@@ -47,9 +50,19 @@ class MainWindow(QWidget, Ui_Form):
         pass
 
     def clear5400(self):
+        self.messageBox = MessageBox(Icon="Warning", text="确定清空所有数据吗？")
+        self.messageBox.resultReady.connect(self.handleResultReady)
+        self.messageBox.show()
+
+    def clearData(self):
+        # 将数据清除逻辑独立到一个方法中，提高代码结构的清晰度
         self.Export5400FilePathLineEdit.clear()
         self.Import5400FilePathLineEdit.clear()
-
+        self.PeakTable5400TableView.setModel(None)
+        self.SmearTable5400TableView.setModel(None)
+        self.QualityTable5400TableView.setModel(None)
+        self.ResultTable5400TableWidget.setModel(None)
+                
     def preview5400(self):
         if self.Import5400FilePathLineEdit.text():
             try:
@@ -88,8 +101,8 @@ class MainWindow(QWidget, Ui_Form):
                     self.logTextBrowser.append(Module.logFormat("ERROR", str(filePath["msg"])))
             except IOError:
                 self.logTextBrowser.append(Module.logFormat("ERROR", "部分文件存在异常"+ str(IOError)))
-            except ValueError:
-                self.logTextBrowser.append(Module.logFormat("ERROR", "发生意外错误"+ str(ValueError)))
+            except Exception as e:
+                self.logTextBrowser.append(Module.logFormat("ERROR", "发生意外错误"+ str(e)))
         else:
             self.logTextBrowser.append(Module.logFormat("ERROR", "请选择导入文件路径。"))
 
@@ -105,14 +118,82 @@ class MainWindow(QWidget, Ui_Form):
         rows, columns = data.shape
         # 设置model表头
         model.setHorizontalHeaderLabels(list(data.columns))
-        for row in range(rows):
-            for col in range(columns):
-                item = QStandardItem(str(data.iloc[row][col]))
-                model.setItem(row, col, item)
+
+        try:
+            # 优化性能：尽量减少对data.iloc的重复调用
+            for row in range(rows):
+                # 提取一行数据到列表
+                row_data = data.iloc[row].tolist()
+                for col in range(columns):
+                    item = QStandardItem(str(row_data[col]))
+                    model.setItem(row, col, item)
+        except IndexError:
+            print("Error: Index out of bounds while accessing data.")
+        except Exception as e:
+            # 捕获其他潜在异常，比如类型转换错误等
+            print(f"Error: An unexpected error occurred: {e}")
+
 
         model.setColumnCount(columns)
         model.setRowCount(rows)
         return model
+    
+    def getSystem(self):
+        try:
+            if sys.platform == 'linux' or sys.platform == 'darwin':
+                path = self.config.get('paths', 'linux_path')
+            elif sys.platform == 'win32':
+                path = self.config.get('paths', 'win32_path')
+            # 使用 os.path.join 来构造路径，即使这里的路径已经是完整的
+            path = os.path.join(path)  # 为了演示，实际上这里并不需要join
+            self.Import5400FilePathLineEdit.setText(path)
+        except Exception as e:
+            # 在这里处理可能的异常，比如读取配置文件失败、路径不存在等
+            self.logTextBrowser.append(Module.logFormat("ERROR", str(e)))
+    
+    @Slot(dict)
+    def handleResultReady(self, message):
+        if message["reg"] == 1:
+            self.logTextBrowser.append(Module.logFormat("INFO", "用户确认清除内容" ))
+            self.clearData()
+            # self.logOperationSuccess()
+        else:
+            # self.logOperationCancelled()
+            self.logTextBrowser.append(Module.logFormat("ERROR", str(message["msg"])))
+
+class MessageBox(QMessageBox):
+    resultReady = Signal(dict)
+
+    def __init__(self, Icon, text):
+        super().__init__()
+        self.setWindowTitle("提示")
+        self.setText(text)
+        self.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        self.yes_button = self.button(QMessageBox.StandardButton.Yes)
+        self.no_button = self.button(QMessageBox.StandardButton.No)
+        self.yes_button.setText('是')  # 默认Yes按钮为“是”
+        self.no_button.setText('否')  # 默认No按钮为“否”
+
+        # 改进异常处理和验证Icon是否为有效枚举值
+        if not hasattr(QMessageBox, Icon):
+            raise ValueError(f"{Icon}不是有效的QMessageBox枚举值")
+        iconValue = getattr(QMessageBox, Icon)
+        self.setIcon(iconValue)
+        self.show()
+
+        # 绑定信号和槽
+        self.buttonClicked.connect(self.handleButtonClicked)
+
+    @Slot(QAbstractButton)
+    def handleButtonClicked(self, button):
+        # 根据点击的按钮提供相应的返回值
+        if button.text() == "是":
+            result = {"reg": 1, "msg": "用户点击了确定按钮"}
+        elif button.text() == "否":
+            result = {"reg": 0, "msg": "用户点击了取消按钮"}
+        else:
+            result = {"reg": 0, "msg": "用户点击了取消按钮"}
+        self.resultReady.emit(result)  # 发出信号携带结果
 
 class CreateModule:
     def __init__(self, filePath: dict) -> None:
@@ -135,7 +216,6 @@ class CreateModule:
         QUALITYTABLEFILE = "Quality Table.csv"
 
         peakTable = ""
-
         try:
             # 搜索文件并进行异常处理
             smearTable = self.findFileInPath(self.filePath, SMEARTABLEFILE)[0]
