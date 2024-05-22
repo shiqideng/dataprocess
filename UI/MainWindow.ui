@@ -13,36 +13,44 @@
   <property name="windowTitle">
    <string>DataProcess</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_2">
-   <property name="spacing">
-    <number>20</number>
-   </property>
-   <property name="topMargin">
-    <number>20</number>
-   </property>
+  <property name="layoutDirection">
+   <enum>Qt::LeftToRight</enum>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QMainWindow {
+  border-radius: 200px;
+}</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_4">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_7">
-     <property name="spacing">
-      <number>50</number>
-     </property>
      <property name="leftMargin">
-      <number>20</number>
-     </property>
-     <property name="topMargin">
       <number>20</number>
      </property>
      <property name="rightMargin">
       <number>20</number>
      </property>
+     <property name="bottomMargin">
+      <number>20</number>
+     </property>
      <item>
       <layout class="QVBoxLayout" name="verticalLayout">
        <property name="spacing">
+        <number>20</number>
+       </property>
+       <property name="leftMargin">
         <number>10</number>
+       </property>
+       <property name="topMargin">
+        <number>15</number>
+       </property>
+       <property name="rightMargin">
+        <number>40</number>
        </property>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <property name="spacing">
-          <number>22</number>
+          <number>32</number>
          </property>
          <item>
           <widget class="QLabel" name="Select5400label">
@@ -84,7 +92,7 @@
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_5">
          <item>
-          <widget class="QLabel" name="label_2">
+          <widget class="QLabel" name="Export5400Label">
            <property name="font">
             <font>
              <pointsize>9</pointsize>
@@ -123,68 +131,128 @@
       </layout>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_6">
-       <property name="spacing">
-        <number>0</number>
-       </property>
-       <property name="leftMargin">
-        <number>0</number>
-       </property>
-       <property name="rightMargin">
-        <number>10</number>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <property name="topMargin">
+        <number>15</number>
        </property>
        <item>
-        <widget class="QLabel" name="SampleType5400label">
-         <property name="font">
-          <font>
-           <pointsize>9</pointsize>
-          </font>
+        <layout class="QHBoxLayout" name="horizontalLayout_6">
+         <property name="spacing">
+          <number>0</number>
          </property>
-         <property name="text">
-          <string>样本类型：</string>
+         <property name="leftMargin">
+          <number>0</number>
          </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QComboBox" name="SampleType5400ComboBox">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>80</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>9</pointsize>
-          </font>
-         </property>
-         <property name="styleSheet">
-          <string notr="true"/>
-         </property>
-         <property name="editable">
-          <bool>false</bool>
-         </property>
-         <property name="duplicatesEnabled">
-          <bool>false</bool>
+         <property name="rightMargin">
+          <number>10</number>
          </property>
          <item>
-          <property name="text">
-           <string>文库</string>
-          </property>
+          <widget class="QLabel" name="SampleType5400label">
+           <property name="font">
+            <font>
+             <pointsize>9</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>样本类型：</string>
+           </property>
+          </widget>
          </item>
-        </widget>
+         <item>
+          <widget class="QComboBox" name="SampleType5400ComboBox">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>80</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>9</pointsize>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true"/>
+           </property>
+           <property name="editable">
+            <bool>false</bool>
+           </property>
+           <property name="duplicatesEnabled">
+            <bool>false</bool>
+           </property>
+           <item>
+            <property name="text">
+             <string>文库</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>核酸</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <property name="spacing">
+          <number>5</number>
+         </property>
+         <property name="topMargin">
+          <number>15</number>
+         </property>
+         <item>
+          <widget class="QCheckBox" name="ReName5400CheckBox">
+           <property name="layoutDirection">
+            <enum>Qt::LeftToRight</enum>
+           </property>
+           <property name="autoFillBackground">
+            <bool>true</bool>
+           </property>
+           <property name="inputMethodHints">
+            <set>Qt::ImhHiddenText</set>
+           </property>
+           <property name="text">
+            <string>图片重命名</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+           <property name="tristate">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="Waring5400Label">
+           <property name="font">
+            <font>
+             <bold>true</bold>
+             <underline>true</underline>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">color: rgb(255, 0, 0);</string>
+           </property>
+           <property name="text">
+            <string>提示：勾选后将重命名图片</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </item>
@@ -196,13 +264,13 @@
       <number>50</number>
      </property>
      <property name="leftMargin">
-      <number>20</number>
+      <number>40</number>
      </property>
      <property name="rightMargin">
-      <number>20</number>
+      <number>40</number>
      </property>
      <property name="bottomMargin">
-      <number>0</number>
+      <number>20</number>
      </property>
      <item>
       <widget class="QPushButton" name="Preview5400PushButton">
@@ -214,7 +282,7 @@
      <item>
       <widget class="QPushButton" name="Start5400PushButton">
        <property name="text">
-        <string>开始分析</string>
+        <string>开始处理</string>
        </property>
       </widget>
      </item>
@@ -236,29 +304,41 @@
    </item>
    <item>
     <widget class="QTabWidget" name="QTabWidget5400">
+     <property name="font">
+      <font>
+       <stylestrategy>PreferAntialias</stylestrategy>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">、</string>
+     </property>
      <property name="currentIndex">
       <number>0</number>
      </property>
      <property name="tabBarAutoHide">
       <bool>false</bool>
      </property>
-     <widget class="QWidget" name="PeakTable5400tab">
-      <attribute name="title">
-       <string>Peak Table</string>
-      </attribute>
-      <layout class="QGridLayout" name="gridLayout_2">
-       <item row="0" column="0">
-        <widget class="QTableView" name="PeakTable5400TableView"/>
-       </item>
-      </layout>
-     </widget>
      <widget class="QWidget" name="SmearTable5400tab">
       <attribute name="title">
        <string>Smear Table</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_3">
        <item row="0" column="0">
-        <widget class="QTableView" name="SmearTable5400TableView"/>
+        <widget class="QTableView" name="SmearTable5400TableView">
+         <property name="styleSheet">
+          <string notr="true">QTableView {
+	border-radius: 10px;  /* 设置圆角的像素值*/
+	background-color: white; /* 背景色*/
+}
+QHeaderView::section {
+	border: 1px solid #D8D8D8;  /* 分区线的颜色和宽度*/
+	background-color: #F8F8F8; /* 表头背景色	*/
+	border: 1px solid #D8D8D8; /* 分区线的颜色和宽度*/
+	padding-left: 5px; /* 内边距*/
+	border-radius: 10px; /* 设置圆角的像素值*/
+}</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -268,7 +348,45 @@
       </attribute>
       <layout class="QGridLayout" name="gridLayout_5">
        <item row="0" column="0">
-        <widget class="QTableView" name="QualityTable5400TableView"/>
+        <widget class="QTableView" name="QualityTable5400TableView">
+         <property name="styleSheet">
+          <string notr="true">QTableView {
+	border-radius: 10px;  /* 设置圆角的像素值*/
+	background-color: white; /* 背景色*/
+}
+QHeaderView::section {
+	border: 1px solid #D8D8D8;  /* 分区线的颜色和宽度*/
+	background-color: #F8F8F8; /* 表头背景色	*/
+	border: 1px solid #D8D8D8; /* 分区线的颜色和宽度*/
+	padding-left: 5px; /* 内边距*/
+	border-radius: 10px; /* 设置圆角的像素值*/
+}</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="PeakTable5400tab">
+      <attribute name="title">
+       <string>Peak Table</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="0">
+        <widget class="QTableView" name="PeakTable5400TableView">
+         <property name="styleSheet">
+          <string notr="true">QTableView {
+	border-radius: 10px;  /* 设置圆角的像素值*/
+	background-color: white; /* 背景色*/
+}
+QHeaderView::section {
+	border: 1px solid #D8D8D8;  /* 分区线的颜色和宽度*/
+	background-color: #F8F8F8; /* 表头背景色	*/
+	border: 1px solid #D8D8D8; /* 分区线的颜色和宽度*/
+	padding-left: 5px; /* 内边距*/
+	border-radius: 10px; /* 设置圆角的像素值*/
+}</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -278,7 +396,21 @@
       </attribute>
       <layout class="QGridLayout" name="gridLayout">
        <item row="0" column="0">
-        <widget class="QTableWidget" name="ResultTable5400TableWidget"/>
+        <widget class="QTableView" name="ResultTable5400TableView">
+         <property name="styleSheet">
+          <string notr="true">QTableView {
+	border-radius: 10px;  /* 设置圆角的像素值*/
+	background-color: white; /* 背景色*/
+}
+QHeaderView::section {
+	border: 1px solid #D8D8D8;  /* 分区线的颜色和宽度*/
+	background-color: #F8F8F8; /* 表头背景色	*/
+	border: 1px solid #D8D8D8; /* 分区线的颜色和宽度*/
+	padding-left: 5px; /* 内边距*/
+	border-radius: 10px; /* 设置圆角的像素值*/
+}</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -311,5 +443,22 @@ li.checked::marker { content: &quot;\2612&quot;; }
   </layout>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>ReName5400CheckBox</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>Waring5400Label</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>794</x>
+     <y>64</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>794</x>
+     <y>88</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
