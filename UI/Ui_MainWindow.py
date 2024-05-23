@@ -210,13 +210,15 @@ class Ui_Form(object):
         self.SmearTable5400TableView.setStyleSheet(u"QTableView {\n"
 "	border-radius: 10px;  /* \u8bbe\u7f6e\u5706\u89d2\u7684\u50cf\u7d20\u503c*/\n"
 "	background-color: white; /* \u80cc\u666f\u8272*/\n"
+"	\n"
 "}\n"
 "QHeaderView::section {\n"
 "	border: 1px solid #D8D8D8;  /* \u5206\u533a\u7ebf\u7684\u989c\u8272\u548c\u5bbd\u5ea6*/\n"
 "	background-color: #F8F8F8; /* \u8868\u5934\u80cc\u666f\u8272	*/\n"
 "	border: 1px solid #D8D8D8; /* \u5206\u533a\u7ebf\u7684\u989c\u8272\u548c\u5bbd\u5ea6*/\n"
 "	padding-left: 5px; /* \u5185\u8fb9\u8ddd*/\n"
-"	border-radius: 10px; /* \u8bbe\u7f6e\u5706\u89d2\u7684\u50cf\u7d20\u503c*/\n"
+"	/* border-radius: 10px; /* \u8bbe\u7f6e\u5706\u89d2\u7684\u50cf\u7d20\u503c*/\n"
+"	text-align: center;\n"
 "}")
 
         self.gridLayout_3.addWidget(self.SmearTable5400TableView, 0, 0, 1, 1)
@@ -237,7 +239,6 @@ class Ui_Form(object):
 "	background-color: #F8F8F8; /* \u8868\u5934\u80cc\u666f\u8272	*/\n"
 "	border: 1px solid #D8D8D8; /* \u5206\u533a\u7ebf\u7684\u989c\u8272\u548c\u5bbd\u5ea6*/\n"
 "	padding-left: 5px; /* \u5185\u8fb9\u8ddd*/\n"
-"	border-radius: 10px; /* \u8bbe\u7f6e\u5706\u89d2\u7684\u50cf\u7d20\u503c*/\n"
 "}")
 
         self.gridLayout_5.addWidget(self.QualityTable5400TableView, 0, 0, 1, 1)
@@ -258,7 +259,6 @@ class Ui_Form(object):
 "	background-color: #F8F8F8; /* \u8868\u5934\u80cc\u666f\u8272	*/\n"
 "	border: 1px solid #D8D8D8; /* \u5206\u533a\u7ebf\u7684\u989c\u8272\u548c\u5bbd\u5ea6*/\n"
 "	padding-left: 5px; /* \u5185\u8fb9\u8ddd*/\n"
-"	border-radius: 10px; /* \u8bbe\u7f6e\u5706\u89d2\u7684\u50cf\u7d20\u503c*/\n"
 "}")
 
         self.gridLayout_2.addWidget(self.PeakTable5400TableView, 0, 0, 1, 1)
