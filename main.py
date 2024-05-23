@@ -7,10 +7,9 @@ import csv
 from configparser import ConfigParser
 
 # 第三方库
-from PySide6.QtWidgets import QApplication,  QWidget, QFileDialog, QMessageBox, QAbstractButton, QHeaderView
-from PySide6.QtCore import QStandardPaths, Slot, Signal, Qt
-from PySide6.QtGui import QStandardItemModel, QStandardItem, QIcon
-import pandas as pd
+from PySide6.QtWidgets import QApplication,  QWidget, QFileDialog, QHeaderView
+from PySide6.QtCore import QStandardPaths, Slot
+from PySide6.QtGui import  QIcon
 
 # 本地包
 from UI.Ui_MainWindow import Ui_Form
@@ -70,8 +69,8 @@ class MainWindow(QWidget, Ui_Form):
                 writer.writerow(rowData)
 
         self.logTextBrowser.append(Module.logFormat("INFO", f'数据已成功导出到{fileName}!'))
-        self.messageBox = MessageBox(Icon="Infomation", text=f'数据已成功导出到{fileName}!')
-        self.messageBox.show()
+        self.messagebox = Module.MessageBox(Icon="Infomation", text=f'数据已成功导出到{fileName}!')
+        self.messagebox.show()
 
     def handleIndexChanged(self):
         if self.SampleType5400ComboBox.currentText() == "核酸":
@@ -80,12 +79,42 @@ class MainWindow(QWidget, Ui_Form):
             self.QTabWidget5400.removeTab(2)
 
     def start5400(self):
-        pass
-
+        if self.Import5400FilePathLineEdit.text():
+            try:
+                filePath = findFilePath({"path": self.Import5400FilePathLineEdit.text(), "SampleType":self.SampleType5400ComboBox.currentText()})
+                filePath = filePath.getFilePath()
+                if filePath["reg"] == 1:
+                    self.saveName = filePath["msg"]["saveName"]
+                    if self.SampleType5400ComboBox.currentText() == "核酸":
+                        self.logTextBrowser.append(Module.logFormat("INFO", "核酸分析暂未支持，请等待后续升级！"))
+                        self.messageBox = Module.MessageBox(Icon="Warning", text="核酸结果分析暂未支持，请等待后续升级！")
+                        self.messageBox.show()
+                    elif self.SampleType5400ComboBox.currentText() == "文库":
+                        global qualityTablepath
+                        qualityTablepath = filePath["msg"]["qualityTable"]
+                        global smearTablepath
+                        smearTablepath = filePath["msg"]["smearTable"]
+                        filePath = {"SampleType":"文库", "qualityTablepath": qualityTablepath, "smearTablepath":smearTablepath}
+                        ResultModule = Module.caculateResult(filePath)
+                        Result = Module.createModel({"type": 1, "path":ResultModule})
+                        self.ResultTable5400TableView.setModel(Result)
+                        # 设置表格行和列自适应
+                        self.ResultTable5400TableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+                        self.ResultTable5400TableView.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
+                        self.ResultTable5400TableView.resizeColumnsToContents()
+                else:
+                    self.logTextBrowser.append(Module.logFormat("ERROR", str(filePath["msg"])))
+            except IOError:
+                self.logTextBrowser.append(Module.logFormat("ERROR", "部分文件存在异常"+ str(IOError)))
+            except Exception as e:
+                self.logTextBrowser.append(Module.logFormat("ERROR", "发生意外错误"+ str(e)))
+        else:
+            self.logTextBrowser.append(Module.logFormat("ERROR", "请选择导入文件路径。"))
+            
     def clear5400(self):
-        self.messageBox = MessageBox(Icon="Question", text="确定清空所有数据吗？")
-        self.messageBox.resultReady.connect(self.handleResultReady)
-        self.messageBox.show()
+        self.messagebox = Module.MessageBox(Icon="Question", text="确定清空所有数据吗？")
+        self.messagebox.resultReady.connect(self.handleResultReady)
+        self.messagebox.show()
 
     def clearData(self):
         # 定义需要清除数据的表格视图列表
@@ -116,35 +145,38 @@ class MainWindow(QWidget, Ui_Form):
     def preview5400(self):
         if self.Import5400FilePathLineEdit.text():
             try:
-                filePath = CreateModule({"path": self.Import5400FilePathLineEdit.text(), "SampleType":self.SampleType5400ComboBox.currentText()})
+                filePath = findFilePath({"path": self.Import5400FilePathLineEdit.text(), "SampleType":self.SampleType5400ComboBox.currentText()})
                 filePath = filePath.getFilePath()
                 if filePath["reg"] == 1:
                     self.saveName = filePath["msg"]["saveName"]
                     if self.SampleType5400ComboBox.currentText() == "核酸":
                         self.logTextBrowser.append(Module.logFormat("INFO", "核酸分析暂未支持，请等待后续升级！"))
-                        self.messageBox = MessageBox(Icon="Warning", text="核酸结果分析暂未支持，请等待后续升级！")
+                        self.messageBox = Module.MessageBox(Icon="Warning", text="核酸结果分析暂未支持，请等待后续升级！")
                         self.messageBox.show()
 
                         # self.logTextBrowser.append(Module.logFormat("INFO", "qualityTablePath:" + str(filePath["msg"]["qualityTable"])))
                         # self.logTextBrowser.append(Module.logFormat("INFO", "smearTablePath:" + str(filePath["msg"]["smearTable"])))
                         # self.logTextBrowser.append(Module.logFormat("INFO", "peakTablePath:" + str(filePath["msg"]["peakTable"])))
-
+                        
+                        # global qualityTablepath
                         # qualityTablePath = filePath["msg"]["qualityTable"]
-                        # quality = self.createModel(qualityTablePath)
+                        # quality = Module.createModel(qualityTablePath)
                         # self.QualityTable5400TableView.setModel(quality)
                         # # 设置表格行和列自适应
                         # self.QualityTable5400TableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
                         # self.QualityTable5400TableView.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
+                        # global smearTablepath
                         # smearTablePath = filePath["msg"]["smearTable"]
-                        # smear = self.createModel(smearTablePath)
+                        # smear = Module.createModel(smearTablePath)
                         # self.SmearTable5400TableView.setModel(smear)
                         # # 设置表格行和列自适应
                         # self.SmearTable5400TableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
                         # self.SmearTable5400TableView.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
+                        # global peakTablePath
                         # peakTablePath = filePath["msg"]["peakTable"]
-                        # peak =self.createModel(peakTablePath)
+                        # peak =Module.createModel(peakTablePath)
                         # self.PeakTable5400TableView.setModel(peak)
                         # # 设置表格行和列自适应
                         # self.PeakTable5400TableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -154,16 +186,18 @@ class MainWindow(QWidget, Ui_Form):
                         self.logTextBrowser.append(Module.logFormat("INFO", "qualityTablePath:" + str(filePath["msg"]["qualityTable"])))
                         self.logTextBrowser.append(Module.logFormat("INFO", "smearTablePath:" + str(filePath["msg"]["smearTable"])))
 
+                        global qualityTablepath
                         qualityTablepath = filePath["msg"]["qualityTable"]
-                        quality = self.createModel({"type": 2, "path":qualityTablepath})
+                        quality = Module.createModel({"type": 2, "path":qualityTablepath})
                         self.QualityTable5400TableView.setModel(quality)
                         # 设置表格行和列自适应
                         self.QualityTable5400TableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
                         self.QualityTable5400TableView.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
                         self.QualityTable5400TableView.resizeColumnsToContents()
-
+                        
+                        global smearTablepath
                         smearTablepath = filePath["msg"]["smearTable"]
-                        smear = self.createModel({"type": 2, "path":smearTablepath})
+                        smear = Module.createModel({"type": 2, "path":smearTablepath})
                         self.SmearTable5400TableView.setModel(smear)
                         # 设置表格行和列自适应
                         self.SmearTable5400TableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -179,40 +213,7 @@ class MainWindow(QWidget, Ui_Form):
         else:
             self.logTextBrowser.append(Module.logFormat("ERROR", "请选择导入文件路径。"))
 
-    def createModel(self, variable: dict) -> QStandardItemModel:
-        """
-        :param path: {type, path} -> 类型：1 dataform， 2 file Path
-        :return: QStandardItemModel
-        """
-        # 初始化模型
-        model = MyQStandardItemModelModel()
-        # 初始化表格数据
-        if variable["type"] == 1:
-            data = variable["path"]
-        elif variable["type"] == 2:
-            data = pd.read_csv(variable["path"])
-        rows, columns = data.shape
-        # 设置model表头
-        model.setHorizontalHeaderLabels(list(data.columns))
 
-        try:
-            # 优化性能：尽量减少对data.iloc的重复调用
-            for row in range(rows):
-                # 提取一行数据到列表
-                row_data = data.iloc[row].tolist()
-                for col in range(columns):
-                    item = QStandardItem(str(row_data[col]))
-                    model.setItem(row, col, item)
-        except IndexError:
-            print("Error: Index out of bounds while accessing data.")
-        except Exception as e:
-            # 捕获其他潜在异常，比如类型转换错误等
-            print(f"Error: An unexpected error occurred: {e}")
-
-
-        model.setColumnCount(columns)
-        model.setRowCount(rows)
-        return model
     
     def getSystem(self):
         try:
@@ -242,41 +243,7 @@ class MainWindow(QWidget, Ui_Form):
             self.logTextBrowser.append(Module.logFormat("ERROR", str(message["msg"])))
 
 
-class MessageBox(QMessageBox):
-    resultReady = Signal(dict)
-
-    def __init__(self, Icon, text):
-        super().__init__()
-        self.setWindowTitle("提示")
-        self.setText(text)
-        self.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-        self.yes_button = self.button(QMessageBox.StandardButton.Yes)
-        self.no_button = self.button(QMessageBox.StandardButton.No)
-        self.yes_button.setText('是')  # 默认Yes按钮为“是”
-        self.no_button.setText('否')  # 默认No按钮为“否”
-
-        # 改进异常处理和验证Icon是否为有效枚举值
-        if not hasattr(QMessageBox, Icon):
-            raise ValueError(f"{Icon}不是有效的QMessageBox枚举值")
-        iconValue = getattr(QMessageBox, Icon)
-        self.setIcon(iconValue)
-        self.show()
-
-        # 绑定信号和槽
-        self.buttonClicked.connect(self.handleButtonClicked)
-
-    @Slot(QAbstractButton)
-    def handleButtonClicked(self, button):
-        # 根据点击的按钮提供相应的返回值
-        if button.text() == "是":
-            result = {"reg": 1, "msg": "用户点击了确定按钮"}
-        elif button.text() == "否":
-            result = {"reg": 0, "msg": "用户取消了操作"}
-        else:
-            result = {"reg": 0, "msg": "用户取消了操作"}
-        self.resultReady.emit(result)  # 发出信号携带结果
-
-class CreateModule:
+class findFilePath:
     def __init__(self, filePath: dict) -> None:
         self.filePath = filePath["path"]
         self.sampleType = filePath["SampleType"]
@@ -349,15 +316,7 @@ class CreateModule:
         for file in glob.iglob(f'{folderPath}/*{partialFileName}'):
             filePath.append(file)
         return filePath
-
-class MyQStandardItemModelModel(QStandardItemModel):
-    """
-    重写QStandardItemModel的data函数，使QTableView全部item居中
-    """
-    def data(self, index, role=None):
-        if role == Qt.TextAlignmentRole:
-            return Qt.AlignCenter
-        return QStandardItemModel.data(self, index, role)
+    
 
 if __name__ == '__main__':
     app = QApplication([])
