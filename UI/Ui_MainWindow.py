@@ -17,14 +17,15 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QGridLayout,
     QHBoxLayout, QHeaderView, QLabel, QLineEdit,
-    QPushButton, QSizePolicy, QTabWidget, QTableView,
-    QTextBrowser, QToolButton, QVBoxLayout, QWidget)
+    QProgressBar, QPushButton, QSizePolicy, QTabWidget,
+    QTableView, QTextBrowser, QToolButton, QVBoxLayout,
+    QWidget)
 
 class Ui_Form(object):
     def setupUi(self, Form):
         if not Form.objectName():
             Form.setObjectName(u"Form")
-        Form.resize(900, 548)
+        Form.resize(904, 556)
         Form.setLayoutDirection(Qt.LeftToRight)
         Form.setStyleSheet(u"QMainWindow {\n"
 "  border-radius: 200px;\n"
@@ -199,7 +200,9 @@ class Ui_Form(object):
         font2 = QFont()
         font2.setStyleStrategy(QFont.PreferAntialias)
         self.QTabWidget5400.setFont(font2)
-        self.QTabWidget5400.setStyleSheet(u"\u3001")
+        self.QTabWidget5400.setStyleSheet(u"QTabWidget {  \n"
+"	 background-color: transparent;  /* \u8bbe\u7f6e QTabWidget \u80cc\u666f\u900f\u660e */  \n"
+"}")
         self.QTabWidget5400.setTabBarAutoHide(False)
         self.SmearTable5400tab = QWidget()
         self.SmearTable5400tab.setObjectName(u"SmearTable5400tab")
@@ -264,13 +267,13 @@ class Ui_Form(object):
         self.gridLayout_2.addWidget(self.PeakTable5400TableView, 0, 0, 1, 1)
 
         self.QTabWidget5400.addTab(self.PeakTable5400tab, "")
-        self.ResultTable5400tab = QWidget()
-        self.ResultTable5400tab.setObjectName(u"ResultTable5400tab")
-        self.gridLayout = QGridLayout(self.ResultTable5400tab)
+        self.ResultTabLabChip5400tab = QWidget()
+        self.ResultTabLabChip5400tab.setObjectName(u"ResultTabLabChip5400tab")
+        self.gridLayout = QGridLayout(self.ResultTabLabChip5400tab)
         self.gridLayout.setObjectName(u"gridLayout")
-        self.ResultTable5400TableView = QTableView(self.ResultTable5400tab)
-        self.ResultTable5400TableView.setObjectName(u"ResultTable5400TableView")
-        self.ResultTable5400TableView.setStyleSheet(u"QTableView {\n"
+        self.ResultTableLabChip5400TableView = QTableView(self.ResultTabLabChip5400tab)
+        self.ResultTableLabChip5400TableView.setObjectName(u"ResultTableLabChip5400TableView")
+        self.ResultTableLabChip5400TableView.setStyleSheet(u"QTableView {\n"
 "	border-radius: 10px;  /* \u8bbe\u7f6e\u5706\u89d2\u7684\u50cf\u7d20\u503c*/\n"
 "	background-color: white; /* \u80cc\u666f\u8272*/\n"
 "}\n"
@@ -282,21 +285,58 @@ class Ui_Form(object):
 "	border-radius: 10px; /* \u8bbe\u7f6e\u5706\u89d2\u7684\u50cf\u7d20\u503c*/\n"
 "}")
 
-        self.gridLayout.addWidget(self.ResultTable5400TableView, 0, 0, 1, 1)
+        self.gridLayout.addWidget(self.ResultTableLabChip5400TableView, 0, 0, 1, 1)
 
-        self.QTabWidget5400.addTab(self.ResultTable5400tab, "")
+        self.QTabWidget5400.addTab(self.ResultTabLabChip5400tab, "")
+        self.ResultTableAgilent5400 = QWidget()
+        self.ResultTableAgilent5400.setObjectName(u"ResultTableAgilent5400")
+        self.gridLayout_6 = QGridLayout(self.ResultTableAgilent5400)
+        self.gridLayout_6.setObjectName(u"gridLayout_6")
+        self.ResultTableAgilent5400TableView = QTableView(self.ResultTableAgilent5400)
+        self.ResultTableAgilent5400TableView.setObjectName(u"ResultTableAgilent5400TableView")
+        self.ResultTableAgilent5400TableView.setStyleSheet(u"QTableView {\n"
+"	border-radius: 10px;  /* \u8bbe\u7f6e\u5706\u89d2\u7684\u50cf\u7d20\u503c*/\n"
+"	background-color: white; /* \u80cc\u666f\u8272*/\n"
+"	\n"
+"}\n"
+"QHeaderView::section {\n"
+"	border: 1px solid #D8D8D8;  /* \u5206\u533a\u7ebf\u7684\u989c\u8272\u548c\u5bbd\u5ea6*/\n"
+"	background-color: #F8F8F8; /* \u8868\u5934\u80cc\u666f\u8272	*/\n"
+"	border: 1px solid #D8D8D8; /* \u5206\u533a\u7ebf\u7684\u989c\u8272\u548c\u5bbd\u5ea6*/\n"
+"	padding-left: 5px; /* \u5185\u8fb9\u8ddd*/\n"
+"	/* border-radius: 10px; /* \u8bbe\u7f6e\u5706\u89d2\u7684\u50cf\u7d20\u503c*/\n"
+"	text-align: center;\n"
+"}")
+
+        self.gridLayout_6.addWidget(self.ResultTableAgilent5400TableView, 0, 0, 1, 1)
+
+        self.QTabWidget5400.addTab(self.ResultTableAgilent5400, "")
         self.logTab = QWidget()
         self.logTab.setObjectName(u"logTab")
         self.gridLayout_4 = QGridLayout(self.logTab)
         self.gridLayout_4.setObjectName(u"gridLayout_4")
         self.logTextBrowser = QTextBrowser(self.logTab)
         self.logTextBrowser.setObjectName(u"logTextBrowser")
+        self.logTextBrowser.setStyleSheet(u"QTextBrowser {\n"
+"	border-radius: 10px;  /* \u8bbe\u7f6e\u5706\u89d2\u7684\u50cf\u7d20\u503c*/\n"
+"	background-color: white; /* \u80cc\u666f\u8272*/\n"
+"}")
 
         self.gridLayout_4.addWidget(self.logTextBrowser, 0, 0, 1, 1)
 
         self.QTabWidget5400.addTab(self.logTab, "")
 
         self.verticalLayout_4.addWidget(self.QTabWidget5400)
+
+        self.DataProcess5400ProgressBar = QProgressBar(Form)
+        self.DataProcess5400ProgressBar.setObjectName(u"DataProcess5400ProgressBar")
+        self.DataProcess5400ProgressBar.setLayoutDirection(Qt.LeftToRight)
+        self.DataProcess5400ProgressBar.setValue(100)
+        self.DataProcess5400ProgressBar.setAlignment(Qt.AlignCenter)
+        self.DataProcess5400ProgressBar.setTextVisible(False)
+        self.DataProcess5400ProgressBar.setOrientation(Qt.Horizontal)
+
+        self.verticalLayout_4.addWidget(self.DataProcess5400ProgressBar)
 
 
         self.retranslateUi(Form)
@@ -321,13 +361,14 @@ class Ui_Form(object):
         self.ReName5400CheckBox.setText(QCoreApplication.translate("Form", u"\u56fe\u7247\u91cd\u547d\u540d", None))
         self.Waring5400Label.setText(QCoreApplication.translate("Form", u"\u63d0\u793a\uff1a\u52fe\u9009\u540e\u5c06\u91cd\u547d\u540d\u56fe\u7247", None))
         self.Preview5400PushButton.setText(QCoreApplication.translate("Form", u"\u9884\u89c8", None))
-        self.Start5400PushButton.setText(QCoreApplication.translate("Form", u"\u5f00\u59cb\u5904\u7406", None))
+        self.Start5400PushButton.setText(QCoreApplication.translate("Form", u"\u5f00\u59cb\u5206\u6790", None))
         self.Export5400PushButton.setText(QCoreApplication.translate("Form", u"\u5bfc\u51fa\u7ed3\u679c", None))
         self.Clear5400PushButton.setText(QCoreApplication.translate("Form", u"\u6e05\u9664", None))
         self.QTabWidget5400.setTabText(self.QTabWidget5400.indexOf(self.SmearTable5400tab), QCoreApplication.translate("Form", u"Smear Table", None))
         self.QTabWidget5400.setTabText(self.QTabWidget5400.indexOf(self.QualityTabletab), QCoreApplication.translate("Form", u"Quality Table", None))
         self.QTabWidget5400.setTabText(self.QTabWidget5400.indexOf(self.PeakTable5400tab), QCoreApplication.translate("Form", u"Peak Table", None))
-        self.QTabWidget5400.setTabText(self.QTabWidget5400.indexOf(self.ResultTable5400tab), QCoreApplication.translate("Form", u"\u7ed3\u679c\u9884\u89c8", None))
+        self.QTabWidget5400.setTabText(self.QTabWidget5400.indexOf(self.ResultTabLabChip5400tab), QCoreApplication.translate("Form", u"\u7ed3\u679c\u9884\u89c8LabChip\u683c\u5f0f", None))
+        self.QTabWidget5400.setTabText(self.QTabWidget5400.indexOf(self.ResultTableAgilent5400), QCoreApplication.translate("Form", u"\u7ed3\u679c\u9884\u89c82100\u683c\u5f0f", None))
         self.logTextBrowser.setMarkdown("")
         self.logTextBrowser.setHtml(QCoreApplication.translate("Form", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"

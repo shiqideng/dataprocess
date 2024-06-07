@@ -4,12 +4,13 @@ import os
 import re
 import glob
 import csv
+import openpyxl
 from configparser import ConfigParser
 
 # 第三方库
-from PySide6.QtWidgets import QApplication,  QWidget, QFileDialog, QHeaderView
-from PySide6.QtCore import QStandardPaths, Slot
-from PySide6.QtGui import  QIcon
+from PySide6.QtWidgets import QWidget, QFileDialog, QHeaderView
+from PySide6.QtCore import QStandardPaths, Slot, Qt
+import openpyxl.writer
 
 # 本地包
 from UI.Ui_MainWindow import Ui_Form
@@ -24,9 +25,11 @@ class MainWindow(QWidget, Ui_Form):
 
     def run(self):
         # 初始化配置
-        self.config = ConfigParser()
-        self.config.read("config.ini", encoding="utf-8")
         self.getSystem()
+        self.DataProcess5400ProgressBar.setValue(0)
+        # 隐藏peaktable标签页
+        self.QTabWidget5400.removeTab(2)
+        # 隐藏labchip标签页
         self.QTabWidget5400.removeTab(2)
         self.ReName5400CheckBox.setChecked(False)
         self.ReName5400CheckBox.setDisabled(True)
@@ -52,24 +55,71 @@ class MainWindow(QWidget, Ui_Form):
             self.logTextBrowser.append(Module.logFormat("INFO" ,"用户取消了文件夹选择操作或出现了错误。"))
     
     def exportToCSV(self):
-        fileName = self.Export5400FilePathLineEdit.text().join(f"/{self.saveName}.csv")
-        self.Export5400FilePathLineEdit.setText(fileName)
-        model = self.ResultTable5400TableView.model()
+        CELLTOCLEAR=["备注", "空列", "原始质量浓度", "原始摩尔浓度"]
+        MERGERANGE="G1:H1"
+        HEADTITLE = "片段大小"
+        fileName = self.Export5400FilePathLineEdit.text() + "\\" + self.saveName + ".csv"
+        # self.Export5400FilePathLineEdit.setText(fileName)
+        model = self.ResultTableAgilent5400TableView.model()
         columnCount = model.columnCount()
         rowCount = model.rowCount()
-
-        with open(fileName, 'w', newline='', encoding='utf-8') as file:
+        if not os.path.exists(self.Export5400FilePathLineEdit.text()):
+            os.makedirs(self.Export5400FilePathLineEdit.text())
+        with open(fileName, 'w', newline='') as file:
             writer = csv.writer(file)
+            # 写入表头
+            headerData = [model.headerData(column, Qt.Horizontal, Qt.DisplayRole) for column in range(columnCount)]
+            writer.writerow(headerData)
+
             for row in range(rowCount):
                 rowData = []
                 for column in range(columnCount):
                     index = model.index(row, column)
-                    value = model.data(index)
+                    value = model.data(index, Qt.DisplayRole)
                     rowData.append(value)
                 writer.writerow(rowData)
+        try:  
+            # 加载并处理Excel文件
+
+            with open(fileName, 'r') as file:
+                reader = csv.reader(file)
+                data = list(reader)
+            
+            # 创建Excel工作簿对象
+            wb = openpyxl.Workbook()
+            sheet = wb.active
+            
+            # 将CSV数据逐行写入Excel工作表
+            for row in data:
+                sheet.append(row)
+            
+            # 高效地清空指定单元格内容
+            for cell_value in CELLTOCLEAR:
+                for row in sheet.iter_rows():
+                    for cell in row:
+                        if cell.value == cell_value:
+                            cell.value = None
+
+            # 合并单元格
+            sheet.merge_cells(MERGERANGE)
+            sheet[MERGERANGE.split(":")[0]] = HEADTITLE
+
+            # 保存修改
+            wb.save(fileName.split(".")[0]+ ".xlsx")
+            wb = openpyxl.load_workbook(fileName.split(".")[0]+ ".xlsx")
+            sheet = wb.active
+            for col in 'GHI':
+                for row in sheet[col]:
+                    if row.value == 0:
+                        row.value = None  # 将值为0的单元格设置为None（清空内容）
+            wb.save(fileName.split(".")[0]+ ".xlsx")
+            os.remove(fileName)
+        except Exception as e:
+            print(f"Error occurred: {e}")
+            # 根据实际情况，可以选择重新抛出异常或者进行其他错误处理
 
         self.logTextBrowser.append(Module.logFormat("INFO", f'数据已成功导出到{fileName}!'))
-        self.messagebox = Module.MessageBox(Icon="Infomation", text=f'数据已成功导出到{fileName}!')
+        self.messagebox = Module.MessageBox(Icon="Information", text=f'数据已成功导出到{fileName}!')
         self.messagebox.show()
 
     def handleIndexChanged(self):
@@ -81,27 +131,34 @@ class MainWindow(QWidget, Ui_Form):
     def start5400(self):
         if self.Import5400FilePathLineEdit.text():
             try:
+                self.preview5400()
+                self.upDatePrograssBar(15)
                 filePath = findFilePath({"path": self.Import5400FilePathLineEdit.text(), "SampleType":self.SampleType5400ComboBox.currentText()})
                 filePath = filePath.getFilePath()
                 if filePath["reg"] == 1:
                     self.saveName = filePath["msg"]["saveName"]
                     if self.SampleType5400ComboBox.currentText() == "核酸":
-                        self.logTextBrowser.append(Module.logFormat("INFO", "核酸分析暂未支持，请等待后续升级！"))
-                        self.messageBox = Module.MessageBox(Icon="Warning", text="核酸结果分析暂未支持，请等待后续升级！")
-                        self.messageBox.show()
+                        pass
                     elif self.SampleType5400ComboBox.currentText() == "文库":
                         global qualityTablepath
                         qualityTablepath = filePath["msg"]["qualityTable"]
                         global smearTablepath
                         smearTablepath = filePath["msg"]["smearTable"]
                         filePath = {"SampleType":"文库", "qualityTablepath": qualityTablepath, "smearTablepath":smearTablepath}
-                        ResultModule = Module.caculateResult(filePath)
-                        Result = Module.createModel({"type": 1, "path":ResultModule})
-                        self.ResultTable5400TableView.setModel(Result)
+                        self.worker = Module.caculateResult(filePath)
+                        if self.worker["reg"] == 1:
+                            # ResultModule = self.worker.prograssChange.connect(self.upDatePrograssBar)
+                            Result = Module.createModel({"type": 1, "path":self.worker["msg"]})
+                            # self.ResultTableLabChip5400TableView.setModel(LabChipResult)
+                            self.ResultTableAgilent5400TableView.setModel(Result)
                         # 设置表格行和列自适应
-                        self.ResultTable5400TableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-                        self.ResultTable5400TableView.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
-                        self.ResultTable5400TableView.resizeColumnsToContents()
+                        self.ResultTableLabChip5400TableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+                        self.ResultTableLabChip5400TableView.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
+                        self.ResultTableLabChip5400TableView.resizeColumnsToContents()
+
+                        self.ResultTableAgilent5400TableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+                        self.ResultTableAgilent5400TableView.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
+                        self.ResultTableAgilent5400TableView.resizeColumnsToContents()
                 else:
                     self.logTextBrowser.append(Module.logFormat("ERROR", str(filePath["msg"])))
             except IOError:
@@ -122,7 +179,7 @@ class MainWindow(QWidget, Ui_Form):
             self.PeakTable5400TableView,
             self.SmearTable5400TableView,
             self.QualityTable5400TableView,
-            self.ResultTable5400TableView
+            self.ResultTableAgilent5400TableView
         ]
         
         # 清除文本框中的数据
@@ -218,19 +275,22 @@ class MainWindow(QWidget, Ui_Form):
     def getSystem(self):
         try:
             if sys.platform == 'linux' or sys.platform == 'darwin':
-                importPath = self.config.get('Import Paths', 'linux_path')
-                exportPath = self.config.get('Export Paths', 'linux_path')
+                importPath = Module.getConfig('config.ini','Import Paths', 'linux_path')
+                exportPath = Module.getConfig('config.ini','Export Paths', 'linux_path')
             elif sys.platform == 'win32':
-                importPath = self.config.get('Import Paths', 'win32_path')
-                exportPath = self.config.get('Export Paths', 'win32_path')
+                importPath = Module.getConfig('config.ini','Import Paths', 'win32_path')
+                exportPath = Module.getConfig('config.ini','Export Paths', 'win32_path')
             # 使用 os.path.join 来构造路径，即使这里的路径已经是完整的
-            importPath = os.path.join(importPath)  # 为了演示，实际上这里并不需要join
-            exportPath = os.path.join(exportPath)
+            importPath = os.path.join(importPath["msg"])  # 为了演示，实际上这里并不需要join
+            exportPath = os.path.join(exportPath["msg"])
             self.Import5400FilePathLineEdit.setText(importPath)
             self.Export5400FilePathLineEdit.setText(exportPath)
         except Exception as e:
             # 在这里处理可能的异常，比如读取配置文件失败、路径不存在等
             self.logTextBrowser.append(Module.logFormat("ERROR", str(e)))
+    
+    def upDatePrograssBar(self, value):
+        self.DataProcess5400ProgressBar.setValue(value)
     
     @Slot(dict)
     def handleResultReady(self, message):
@@ -262,6 +322,7 @@ class findFilePath:
         PEAKTABLEFILE = "Peak Table.csv"
         SMEARTABLEFILE = "Smear Analysis Result.csv"
         QUALITYTABLEFILE = "Quality Table.csv"
+        ELECTROPHEROGRAM = "Electropherogram.csv"
         pattern = r'\d{4}\s{1}\d{2}\s{1}\d{2}\s{1}\d{2}H\s{1}\d{2}M'
 
         peakTable = ""
@@ -316,12 +377,3 @@ class findFilePath:
         for file in glob.iglob(f'{folderPath}/*{partialFileName}'):
             filePath.append(file)
         return filePath
-    
-
-if __name__ == '__main__':
-    app = QApplication([])
-    icon = QIcon(r"Resource\logo.png")
-    app.setWindowIcon(icon)
-    window = MainWindow()
-    window.show()
-    sys.exit(app.exec())
