@@ -3,13 +3,12 @@ import sys
 import os
 import re
 import glob
-import csv
 from configparser import ConfigParser
 
 # 第三方库
 from PySide6.QtWidgets import QWidget, QFileDialog, QHeaderView
 from PySide6.QtCore import QStandardPaths, Slot, Qt
-from openpyxl import Workbook, writer,load_workbook
+from openpyxl import Workbook
 
 # 本地包
 from UI.Ui_MainWindow import Ui_Form
