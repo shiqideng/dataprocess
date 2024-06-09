@@ -13,6 +13,13 @@
 3、Package
 
 ```shell
+openpyxl
+pandas
+PySide6
+configparser
+glob
+re
+sys
 
 ```
 
