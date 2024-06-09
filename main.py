@@ -4,13 +4,12 @@ import os
 import re
 import glob
 import csv
-import openpyxl
 from configparser import ConfigParser
 
 # 第三方库
 from PySide6.QtWidgets import QWidget, QFileDialog, QHeaderView
 from PySide6.QtCore import QStandardPaths, Slot, Qt
-import openpyxl.writer
+from openpyxl import Workbook, writer,load_workbook
 
 # 本地包
 from UI.Ui_MainWindow import Ui_Form
@@ -41,7 +40,7 @@ class MainWindow(QWidget, Ui_Form):
         self.Export5400FilePathToolButton.clicked.connect(lambda: self.selectFile("Export5400FilePathLineEdit"))
         self.Preview5400PushButton.clicked.connect(self.preview5400)
         self.Start5400PushButton.clicked.connect(self.start5400)
-        self.Export5400PushButton.clicked.connect(self.exportToCSV)
+        self.Export5400PushButton.clicked.connect(self.exportToExcel)
         self.Clear5400PushButton.clicked.connect(self.clear5400)
         self.SampleType5400ComboBox.currentTextChanged.connect(self.handleIndexChanged)
 
@@ -54,72 +53,76 @@ class MainWindow(QWidget, Ui_Form):
         else:
             self.logTextBrowser.append(Module.logFormat("INFO" ,"用户取消了文件夹选择操作或出现了错误。"))
     
-    def exportToCSV(self):
-        CELLTOCLEAR=["备注", "空列", "原始质量浓度", "原始摩尔浓度"]
-        MERGERANGE="G1:H1"
-        HEADTITLE = "片段大小"
-        fileName = self.Export5400FilePathLineEdit.text() + "\\" + self.saveName + ".csv"
-        # self.Export5400FilePathLineEdit.setText(fileName)
+    def exportToExcel(self):
+        CELL_TO_CLEAR = ["备注", "空列", "原始质量浓度", "原始摩尔浓度"]
+        MERGE_RANGE = "G1:H1"
+        HEAD_TITLE = "片段大小"
+        
+        def get_file_path():
+            dir_path = self.Export5400FilePathLineEdit.text()
+            ensure_dir(dir_path)
+            return os.path.join(dir_path, f"{self.saveName}.xlsx")
+        
+        def ensure_dir(path):
+            """Ensure directory exists."""
+            if not os.path.exists(path):
+                os.makedirs(path)
+
+        # 获取文件路径
+        filePath = get_file_path()
+
+        # 获取模型数据
         model = self.ResultTableAgilent5400TableView.model()
         columnCount = model.columnCount()
         rowCount = model.rowCount()
-        if not os.path.exists(self.Export5400FilePathLineEdit.text()):
-            os.makedirs(self.Export5400FilePathLineEdit.text())
-        with open(fileName, 'w', newline='') as file:
-            writer = csv.writer(file)
-            # 写入表头
-            headerData = [model.headerData(column, Qt.Horizontal, Qt.DisplayRole) for column in range(columnCount)]
-            writer.writerow(headerData)
 
-            for row in range(rowCount):
-                rowData = []
-                for column in range(columnCount):
-                    index = model.index(row, column)
-                    value = model.data(index, Qt.DisplayRole)
-                    rowData.append(value)
-                writer.writerow(rowData)
-        try:  
-            # 加载并处理Excel文件
+        # 创建工作簿
+        wb = Workbook()
+        sheet = wb.active
 
-            with open(fileName, 'r') as file:
-                reader = csv.reader(file)
-                data = list(reader)
-            
-            # 创建Excel工作簿对象
-            wb = openpyxl.Workbook()
-            sheet = wb.active
-            
-            # 将CSV数据逐行写入Excel工作表
-            for row in data:
-                sheet.append(row)
-            
-            # 高效地清空指定单元格内容
-            for cell_value in CELLTOCLEAR:
-                for row in sheet.iter_rows():
-                    for cell in row:
-                        if cell.value == cell_value:
-                            cell.value = None
+        # 写入表头
+        for col in range(columnCount):
+            header = model.headerData(col, Qt.Horizontal, Qt.DisplayRole)
+            sheet.cell(row=1, column=col+1).value = header
 
-            # 合并单元格
-            sheet.merge_cells(MERGERANGE)
-            sheet[MERGERANGE.split(":")[0]] = HEADTITLE
+        # 写入内容
+        for row in range(rowCount):
+            for col in range(columnCount):
+                value = model.data(model.index(row, col), Qt.DisplayRole)
+                sheet.cell(row=row+2, column=col+1).value = value
 
-            # 保存修改
-            wb.save(fileName.split(".")[0]+ ".xlsx")
-            wb = openpyxl.load_workbook(fileName.split(".")[0]+ ".xlsx")
-            sheet = wb.active
-            for col in 'GHI':
-                for row in sheet[col]:
-                    if row.value == 0:
-                        row.value = None  # 将值为0的单元格设置为None（清空内容）
-            wb.save(fileName.split(".")[0]+ ".xlsx")
-            os.remove(fileName)
-        except Exception as e:
-            print(f"Error occurred: {e}")
-            # 根据实际情况，可以选择重新抛出异常或者进行其他错误处理
+        # 清空指定单元格内容
+        for row in sheet.iter_rows(min_row=0, max_row=1):
+            for cell in row:
+                if cell.value in CELL_TO_CLEAR:
+                    cell.value = None
 
-        self.logTextBrowser.append(Module.logFormat("INFO", f'数据已成功导出到{fileName}!'))
-        self.messagebox = Module.MessageBox(Icon="Information", text=f'数据已成功导出到{fileName}!')
+        # 合并单元格并设置标题
+        sheet.merge_cells(range_string=MERGE_RANGE)
+        sheet[MERGE_RANGE.split(":")[0]] = HEAD_TITLE
+
+        # 清理特定列的0值
+        for row in sheet.iter_rows(min_row=2, values_only=False):  
+            # 遍历第7至9列（索引为6到8）  
+            for col_idx in range(6, 9):  
+                # 获取单元格对象  
+                cell = row[col_idx]
+                # 检查单元格的值是否为0  
+                if cell.value == 0 or cell.value == "0":  
+                    # 清空单元格内容  
+                    cell.value = None
+        # for row in sheet.iter_rows(min_row=2, min_col=7, max_col=9):
+        #     for cell in row:
+        #         if cell.value == 0:
+        #             cell.value = None
+
+        # 保存Excel文件
+        wb.save(filePath)
+
+        # 更新日志和消息框
+        log_message = Module.logFormat("INFO", f'数据已成功导出到{filePath}!')
+        self.logTextBrowser.append(log_message)
+        self.messagebox = Module.MessageBox(Icon="Information", text=log_message)
         self.messagebox.show()
 
     def handleIndexChanged(self):
