@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'MainWindow.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.1
+## Created by: Qt User Interface Compiler version 6.7.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -26,9 +26,10 @@ class Ui_Form(object):
         if not Form.objectName():
             Form.setObjectName(u"Form")
         Form.resize(904, 556)
-        Form.setLayoutDirection(Qt.LeftToRight)
+        Form.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
         Form.setStyleSheet(u"QMainWindow {\n"
 "  border-radius: 200px;\n"
+"  background-color: rgba(255, 255, 255,0);\n"
 "}")
         self.verticalLayout_4 = QVBoxLayout(Form)
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
@@ -118,7 +119,7 @@ class Ui_Form(object):
         self.SampleType5400ComboBox.addItem("")
         self.SampleType5400ComboBox.addItem("")
         self.SampleType5400ComboBox.setObjectName(u"SampleType5400ComboBox")
-        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.SampleType5400ComboBox.sizePolicy().hasHeightForWidth())
@@ -141,9 +142,10 @@ class Ui_Form(object):
         self.verticalLayout_2.setContentsMargins(-1, 15, -1, -1)
         self.ReName5400CheckBox = QCheckBox(Form)
         self.ReName5400CheckBox.setObjectName(u"ReName5400CheckBox")
-        self.ReName5400CheckBox.setLayoutDirection(Qt.LeftToRight)
-        self.ReName5400CheckBox.setAutoFillBackground(True)
-        self.ReName5400CheckBox.setInputMethodHints(Qt.ImhHiddenText)
+        self.ReName5400CheckBox.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
+        self.ReName5400CheckBox.setAutoFillBackground(False)
+        self.ReName5400CheckBox.setStyleSheet(u"background-color: rgba(255, 255, 255,0);")
+        self.ReName5400CheckBox.setInputMethodHints(Qt.InputMethodHint.ImhHiddenText)
         self.ReName5400CheckBox.setChecked(True)
         self.ReName5400CheckBox.setTristate(False)
 
@@ -330,11 +332,11 @@ class Ui_Form(object):
 
         self.DataProcess5400ProgressBar = QProgressBar(Form)
         self.DataProcess5400ProgressBar.setObjectName(u"DataProcess5400ProgressBar")
-        self.DataProcess5400ProgressBar.setLayoutDirection(Qt.LeftToRight)
+        self.DataProcess5400ProgressBar.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
         self.DataProcess5400ProgressBar.setValue(100)
-        self.DataProcess5400ProgressBar.setAlignment(Qt.AlignCenter)
+        self.DataProcess5400ProgressBar.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.DataProcess5400ProgressBar.setTextVisible(False)
-        self.DataProcess5400ProgressBar.setOrientation(Qt.Horizontal)
+        self.DataProcess5400ProgressBar.setOrientation(Qt.Orientation.Horizontal)
 
         self.verticalLayout_4.addWidget(self.DataProcess5400ProgressBar)
 
