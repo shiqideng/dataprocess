@@ -33,15 +33,15 @@ def detectEncoding(filePath):
 
 def logFormat(Type, message):
     if Type == "DEBUG":
-        return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "<span style='color:#ffff00;'> [Waring] </span>" + message
+        return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "<span style='color:#ffff00;'> [DEBUG] </span>" + message
     elif Type == "INFO":
-        return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "<span style='color:#00aa00;'> [INFO] </span>" + message
+        return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "<span style='color:#00aa00;'> [Info] </span>" + message
     elif Type == "WARRING":
         return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "<span style='color:#ffaa00;'> [Waring] </span>" + message
     elif Type == "ERROR":
         return  datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "<span style='color:#aa00ff;'> [Error] </span>" + message
     elif Type == "FATAL":
-        return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "<span style='color:#ff0000;'> [FATAL] </span>" + message
+        return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "<span style='color:#ff0000;'> [Fatal] </span>" + message
     
 def getConfig(configPath: str, section: str, option: str) -> str:
 
@@ -87,13 +87,6 @@ def createModel(variable: dict) -> QStandardItemModel:
     model.setRowCount(rows)
     return model
 
-def fomatResult(DataFrame:dict):
-    '''格式化5400结果，并输出为dataframe
-    : param DataFramePath: dict
-    : return DataFrame
-    '''
-    pass
-
 def caculateResult(DataFramePath:dict):
     '''判断5400结果，并输出为dataframe
     : param DataFramePath: dict
@@ -116,7 +109,7 @@ def caculateResult(DataFramePath:dict):
             SMEARADAPTOR="100 bp to 150 bp"
             SMWAESMALLFRAG = "150 bp to 260 bp"
             SMEARAVERAGWFRAG = "200 bp to 4000 bp"
-            SMEARDETERMINEFRAG = "200 bp to 6000 bp"
+            SMEARDETERMINEFRAG = "200 bp to 4000 bp"
             # 格式化样本数据，去除无SmearPeak的样本
             smearTable = smearTable.dropna(subset=["Range"])
             smearTable = smearTable.dropna(subset=["Sample ID"])
