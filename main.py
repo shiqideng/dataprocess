@@ -3,6 +3,7 @@ import sys
 import os
 import re
 import glob
+import time
 from configparser import ConfigParser
 
 # 第三方库
@@ -135,24 +136,40 @@ class MainWindow(QWidget, Ui_Form):
             try:
                 self.preview5400()
                 self.upDatePrograssBar(15)
+                time.sleep(1)
                 filePath = findFilePath({"path": self.Import5400FilePathLineEdit.text(), "SampleType":self.SampleType5400ComboBox.currentText()})
                 filePath = filePath.getFilePath()
                 if filePath["reg"] == 1:
                     self.saveName = filePath["msg"]["saveName"]
+                    self.upDatePrograssBar(20)
+                    time.sleep(1)
+                    self.logTextBrowser.append(Module.logFormat("INFO", f"保存名称：{self.saveName}.xlsx"))
                     if self.SampleType5400ComboBox.currentText() == "核酸":
                         pass
                     elif self.SampleType5400ComboBox.currentText() == "文库":
-                        global qualityTablepath
-                        qualityTablepath = filePath["msg"]["qualityTable"]
-                        global smearTablepath
-                        smearTablepath = filePath["msg"]["smearTable"]
-                        filePath = {"SampleType":"文库", "qualityTablepath": qualityTablepath, "smearTablepath":smearTablepath}
+                        self.logTextBrowser.append(Module.logFormat("INFO", "正在处理准备文库数据..."))
+                        global qualityTablePth
+                        qualityTablePth = filePath["msg"]["qualityTable"]
+                        global smearTablePath
+                        smearTablePath = filePath["msg"]["smearTable"]
+                        filePath = {"SampleType":"文库", "qualityTablepath": qualityTablePth, "smearTablepath":smearTablePath}
                         self.worker = Module.caculateResult(filePath)
                         if self.worker["reg"] == 1:
+                            self.upDatePrograssBar(40)
+                            time.sleep(1)
                             # ResultModule = self.worker.prograssChange.connect(self.upDatePrograssBar)
+                            self.logTextBrowser.append(Module.logFormat("INFO", "开始计算文库数据..."))
                             Result = Module.createModel({"type": 1, "path":self.worker["msg"]})
+                            self.logTextBrowser.append(Module.logFormat("INFO", "文库数据计算完成"))
+                            self.upDatePrograssBar(90)
+                            time.sleep(1)
                             # self.ResultTableLabChip5400TableView.setModel(LabChipResult)
                             self.ResultTableAgilent5400TableView.setModel(Result)
+                            self.upDatePrograssBar(99)
+                            self.logTextBrowser.append(Module.logFormat("INFO", "显示数据..."))
+                            self.messageBox = Module.MessageBox(Icon="Information", text="计算完成")
+                            time.sleep(1)
+                            self.upDatePrograssBar(100)
                         # 设置表格行和列自适应
                         self.ResultTableLabChip5400TableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
                         self.ResultTableLabChip5400TableView.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
