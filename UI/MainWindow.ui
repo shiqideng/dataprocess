@@ -217,6 +217,9 @@
          </property>
          <item>
           <widget class="QCheckBox" name="ReName5400CheckBox">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="layoutDirection">
             <enum>Qt::LayoutDirection::LeftToRight</enum>
            </property>
@@ -483,6 +486,19 @@ li.checked::marker { content: &quot;\2612&quot;; }
      <property name="layoutDirection">
       <enum>Qt::LayoutDirection::LeftToRight</enum>
      </property>
+     <property name="styleSheet">
+      <string notr="true">QProgressBar {  
+    border: 2px solid grey;  
+    border-radius: 10px;  
+    background-color: #e0e0e0;  
+    text-align: center;  
+}  
+  
+QProgressBar::chunk {  
+    background-color: #0078d4; /* 你可以改变这个颜色以匹配你的应用程序的主题 */  
+    border-radius: 8px;  
+}</string>
+     </property>
      <property name="value">
       <number>100</number>
      </property>
@@ -490,10 +506,16 @@ li.checked::marker { content: &quot;\2612&quot;; }
       <set>Qt::AlignmentFlag::AlignCenter</set>
      </property>
      <property name="textVisible">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="orientation">
       <enum>Qt::Orientation::Horizontal</enum>
+     </property>
+     <property name="invertedAppearance">
+      <bool>false</bool>
+     </property>
+     <property name="textDirection">
+      <enum>QProgressBar::Direction::BottomToTop</enum>
      </property>
     </widget>
    </item>

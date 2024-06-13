@@ -142,6 +142,7 @@ class Ui_Form(object):
         self.verticalLayout_2.setContentsMargins(-1, 15, -1, -1)
         self.ReName5400CheckBox = QCheckBox(Form)
         self.ReName5400CheckBox.setObjectName(u"ReName5400CheckBox")
+        self.ReName5400CheckBox.setEnabled(False)
         self.ReName5400CheckBox.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
         self.ReName5400CheckBox.setAutoFillBackground(False)
         self.ReName5400CheckBox.setStyleSheet(u"background-color: rgba(255, 255, 255,0);")
@@ -333,10 +334,23 @@ class Ui_Form(object):
         self.DataProcess5400ProgressBar = QProgressBar(Form)
         self.DataProcess5400ProgressBar.setObjectName(u"DataProcess5400ProgressBar")
         self.DataProcess5400ProgressBar.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
+        self.DataProcess5400ProgressBar.setStyleSheet(u"QProgressBar {  \n"
+"    border: 2px solid grey;  \n"
+"    border-radius: 10px;  \n"
+"    background-color: #e0e0e0;  \n"
+"    text-align: center;  \n"
+"}  \n"
+"  \n"
+"QProgressBar::chunk {  \n"
+"    background-color: #0078d4; /* \u4f60\u53ef\u4ee5\u6539\u53d8\u8fd9\u4e2a\u989c\u8272\u4ee5\u5339\u914d\u4f60\u7684\u5e94\u7528\u7a0b\u5e8f\u7684\u4e3b\u9898 */  \n"
+"    border-radius: 8px;  \n"
+"}")
         self.DataProcess5400ProgressBar.setValue(100)
         self.DataProcess5400ProgressBar.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.DataProcess5400ProgressBar.setTextVisible(False)
+        self.DataProcess5400ProgressBar.setTextVisible(True)
         self.DataProcess5400ProgressBar.setOrientation(Qt.Orientation.Horizontal)
+        self.DataProcess5400ProgressBar.setInvertedAppearance(False)
+        self.DataProcess5400ProgressBar.setTextDirection(QProgressBar.Direction.BottomToTop)
 
         self.verticalLayout_4.addWidget(self.DataProcess5400ProgressBar)
 
