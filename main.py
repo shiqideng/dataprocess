@@ -8,7 +8,7 @@ from configparser import ConfigParser
 
 # 第三方库
 from PySide6.QtWidgets import QWidget, QFileDialog, QHeaderView
-from PySide6.QtCore import QStandardPaths, Slot, Qt
+from PySide6.QtCore import QStandardPaths, Slot, Qt, QTimer
 from openpyxl import Workbook
 
 # 本地包
@@ -26,10 +26,12 @@ class MainWindow(QWidget, Ui_Form):
         # 初始化配置
         self.getSystem()
         self.DataProcess5400ProgressBar.setValue(0)
+        # 隐藏Quality标签页
+        self.QTabWidget5400.removeTab(1)
         # 隐藏peaktable标签页
-        self.QTabWidget5400.removeTab(2)
+        self.QTabWidget5400.removeTab(1)
         # 隐藏labchip标签页
-        self.QTabWidget5400.removeTab(2)
+        self.QTabWidget5400.removeTab(1)
         self.ReName5400CheckBox.setChecked(False)
         self.ReName5400CheckBox.setDisabled(True)
         self.Waring5400Label.setVisible(False)
@@ -91,6 +93,9 @@ class MainWindow(QWidget, Ui_Form):
                 value = model.data(model.index(row, col), Qt.DisplayRole)
                 sheet.cell(row=row+2, column=col+1).value = value
 
+        # 删除孔号列
+        sheet.delete_cols(1)
+
         # 清空指定单元格内容
         for row in sheet.iter_rows(min_row=0, max_row=1):
             for cell in row:
@@ -134,7 +139,11 @@ class MainWindow(QWidget, Ui_Form):
     def start5400(self):
         if self.Import5400FilePathLineEdit.text():
             try:
+                self.upDatePrograssBar(0)
                 self.preview5400()
+                self.timer = QTimer(self)
+                self.timer.start(1000)
+                self.QTabWidget5400.setCurrentIndex(1)
                 self.upDatePrograssBar(15)
                 time.sleep(1)
                 filePath = findFilePath({"path": self.Import5400FilePathLineEdit.text(), "SampleType":self.SampleType5400ComboBox.currentText()})
@@ -165,11 +174,17 @@ class MainWindow(QWidget, Ui_Form):
                             time.sleep(1)
                             # self.ResultTableLabChip5400TableView.setModel(LabChipResult)
                             self.ResultTableAgilent5400TableView.setModel(Result)
+                            # 结果判定下拉列表选择
+                            # judgeList = Module.getConfig('config.ini','Judge', 'judge')["msg"].split(",")
+                            # self.ResultTableAgilent5400TableView.setItemDelegateForColumn(6,Module.MyComboBoxDelegate(judgeList, self.ResultTableAgilent5400TableView))
                             self.upDatePrograssBar(99)
                             self.logTextBrowser.append(Module.logFormat("INFO", "显示数据..."))
-                            self.messageBox = Module.MessageBox(Icon="Information", text="计算完成")
                             time.sleep(1)
                             self.upDatePrograssBar(100)
+                            self.messageBox = Module.MessageBox(Icon="Information", text="计算完成")
+                        elif self.worker["reg"] == 0:
+                            self.messageBox = Module.MessageBox(Icon="Critical", text="计算失败")
+                            self.logTextBrowser.append(Module.logFormat("ERROR", self.worker["msg"]))
                         # 设置表格行和列自适应
                         self.ResultTableLabChip5400TableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
                         self.ResultTableLabChip5400TableView.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -259,17 +274,18 @@ class MainWindow(QWidget, Ui_Form):
                         # self.PeakTable5400TableView.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
                     elif self.SampleType5400ComboBox.currentText() == "文库":
-                        self.logTextBrowser.append(Module.logFormat("INFO", "qualityTablePath:" + str(filePath["msg"]["qualityTable"])))
+                        # self.logTextBrowser.append(Module.logFormat("INFO", "qualityTablePath:" + str(filePath["msg"]["qualityTable"])))
                         self.logTextBrowser.append(Module.logFormat("INFO", "smearTablePath:" + str(filePath["msg"]["smearTable"])))
 
-                        global qualityTablepath
-                        qualityTablepath = filePath["msg"]["qualityTable"]
-                        quality = Module.createModel({"type": 2, "path":qualityTablepath})
-                        self.QualityTable5400TableView.setModel(quality)
-                        # 设置表格行和列自适应
-                        self.QualityTable5400TableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-                        self.QualityTable5400TableView.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
-                        self.QualityTable5400TableView.resizeColumnsToContents()
+                        # # 预览QualityTable
+                        # global qualityTablepath
+                        # qualityTablepath = filePath["msg"]["qualityTable"]
+                        # quality = Module.createModel({"type": 2, "path":qualityTablepath})
+                        # self.QualityTable5400TableView.setModel(quality)
+                        # # 设置表格行和列自适应
+                        # self.QualityTable5400TableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+                        # self.QualityTable5400TableView.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
+                        # self.QualityTable5400TableView.resizeColumnsToContents()
                         
                         global smearTablepath
                         smearTablepath = filePath["msg"]["smearTable"]
@@ -352,25 +368,24 @@ class findFilePath:
                 print(f"未找到 {SMEARTABLEFILE}。")
                 return {"reg": 0, "msg": f"未找到 {SMEARTABLEFILE}"}
 
-            qualityTable = self.findFileInPath(self.filePath, QUALITYTABLEFILE)[0]
-            if not qualityTable:
-                print(f"未找到 {QUALITYTABLEFILE}。")
-                return {"reg": 0, "msg": f"未找到 {QUALITYTABLEFILE}"}
+            # qualityTable = self.findFileInPath(self.filePath, QUALITYTABLEFILE)[0]
+            # if not qualityTable:
+            #     print(f"未找到 {QUALITYTABLEFILE}。")
+            #     return {"reg": 0, "msg": f"未找到 {QUALITYTABLEFILE}"}
 
-            if self.sampleType == "核酸":
-                peakTable = self.findFileInPath(self.filePath, PEAKTABLEFILE)[0]
-                if not peakTable:
-                    print(f"未找到 {PEAKTABLEFILE}。")
-                    return {"reg": 0, "msg": f"未找到 {PEAKTABLEFILE}"}
+            # if self.sampleType == "核酸":
+            #     peakTable = self.findFileInPath(self.filePath, PEAKTABLEFILE)[0]
+            #     if not peakTable:
+            #         print(f"未找到 {PEAKTABLEFILE}。")
+            #         return {"reg": 0, "msg": f"未找到 {PEAKTABLEFILE}"}
             match = re.search(pattern, smearTable)
             if match:
                 if self.sampleType == "文库":
-                    return {"reg": 1, "msg": {"smearTable": smearTable, "qualityTable": qualityTable, "saveName": match.group()}}
+                    return {"reg": 1, "msg": {"smearTable": smearTable, "qualityTable": "", "saveName": match.group()}}
                 elif self.sampleType == "核酸":
-                    return {"reg": 1, "msg": {"smearTable": smearTable, "qualityTable": qualityTable, "peakTable": peakTable, "saveName": match.group()}}
+                    return {"reg": 1, "msg": {"smearTable": smearTable, "qualityTable": "", "peakTable": peakTable, "saveName": match.group()}}
         except Exception as e:
             # 对潜在的异常进行处理
-            print(f"处理文件时发生错误：{e}")
             return {"reg": 0, "msg": e}
 
     def valiDateSampleType(self):
