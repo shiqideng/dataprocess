@@ -9,7 +9,7 @@ logger = logging.getLogger('logger')
 logger.setLevel(logging.INFO)
 
 # 配置 TimedRotatingFileHandler，按照每天切片
-file_handler = logging.handlers.TimedRotatingFileHandler('conf/config.ini', when='midnight', interval=1, backupCount=7, encoding="utf-8")
+file_handler = logging.handlers.TimedRotatingFileHandler('log/log.log', when='midnight', interval=1, backupCount=7, encoding="utf-8")
 file_handler.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 file_handler.setFormatter(formatter)
