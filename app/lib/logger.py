@@ -2,7 +2,9 @@ import logging
 import logging.handlers
 import requests
 
+
 from app.lib import Module
+
 
 # 配置日志记录器
 logger = logging.getLogger('logger')

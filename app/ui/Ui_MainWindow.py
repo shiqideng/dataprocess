@@ -365,7 +365,7 @@ class Ui_Form(object):
     # setupUi
 
     def retranslateUi(self, Form):
-        Form.setWindowTitle(QCoreApplication.translate("Form", u"DataProcess(v0.0.1 beta)", None))
+        Form.setWindowTitle(QCoreApplication.translate("Form", u"DataProcess(v0.0.2 beta)", None))
         self.Select5400label.setText(QCoreApplication.translate("Form", u"\u6587\u4ef6\u5939\u8def\u5f84\uff1a", None))
         self.Import5400FilePathToolButton.setText(QCoreApplication.translate("Form", u"...", None))
         self.Export5400Label.setText(QCoreApplication.translate("Form", u"\u7ed3\u679c\u4fdd\u5b58\u8def\u5f84\uff1a", None))
