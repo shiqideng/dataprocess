@@ -152,7 +152,8 @@ def caculateResult(DataFramePath:dict):
                     # 判断样品是否合格
                     result = ""
                     judge = ""
-                    if averageFragMolarity >= 1000:
+                    # 摩尔浓度小于500pmol/L，判断无明显目的峰
+                    if averageFragMolarity >= 500:
                         # 接头二聚体情况判断
                         if adaptorPercentage >= 0.03:
                             if len(result) >0:
@@ -207,9 +208,7 @@ def caculateResult(DataFramePath:dict):
                                 judge += "待反馈"
                             else:
                                 judge += "待反馈"
-                            
-
-                        # 判定是否需要人工判定
+                        # 判定是否需要人工判定（Smear区间大于默认的4个）
                         if size > 4:
                             judge = "需要人工判定"
                             if len(result) >0:
