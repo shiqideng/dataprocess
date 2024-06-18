@@ -106,8 +106,8 @@ class MainWindow(QWidget, Ui_Form):
 
         # 清理特定列的0值
         for row in sheet.iter_rows(min_row=2, values_only=False):  
-            # 遍历第7至9列（索引为6到8）  
-            for col_idx in range(6, 9):  
+            # 遍历第7至9列（索引为6到12）
+            for col_idx in range(6, 12):  
                 # 获取单元格对象  
                 cell = row[col_idx]
                 # 检查单元格的值是否为0  
