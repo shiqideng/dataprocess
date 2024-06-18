@@ -8,7 +8,7 @@ import time
 # 第三方库
 from PySide6.QtWidgets import QWidget, QFileDialog, QHeaderView
 from PySide6.QtCore import QStandardPaths, Slot, Qt, QTimer
-from openpyxl import Workbook
+from openpyxl import Workbook, load_workbook
 
 # 本地包
 from app.ui.Ui_MainWindow import Ui_Form
@@ -61,7 +61,7 @@ class MainWindow(QWidget, Ui_Form):
         def get_file_path():
             dir_path = self.Export5400FilePathLineEdit.text()
             ensure_dir(dir_path)
-            return os.path.join(dir_path, f"{self.saveName}.xlsx")
+            return {"reg":1, "msg":{"exportResultPath":os.path.join(dir_path, f"{self.saveName}.xlsx"),"caculateResultPath":os.path.join(dir_path, f"{self.saveName}_backup.xlsx")}}
         
         def ensure_dir(path):
             """Ensure directory exists."""
@@ -70,64 +70,72 @@ class MainWindow(QWidget, Ui_Form):
 
         # 获取文件路径
         filePath = get_file_path()
+        if filePath["reg"] == 1:
+            caculateResultPath = filePath["msg"]["caculateResultPath"]
+            exportResultPath = filePath["msg"]["exportResultPath"]
+            # 获取模型数据
+            model = self.ResultTableAgilent5400TableView.model()
+            columnCount = model.columnCount()
+            rowCount = model.rowCount()
 
-        # 获取模型数据
-        model = self.ResultTableAgilent5400TableView.model()
-        columnCount = model.columnCount()
-        rowCount = model.rowCount()
+            # 创建工作簿
+            wb = Workbook()
+            sheet = wb.active
 
-        # 创建工作簿
-        wb = Workbook()
-        sheet = wb.active
-
-        # 写入表头
-        for col in range(columnCount):
-            header = model.headerData(col, Qt.Horizontal, Qt.DisplayRole)
-            sheet.cell(row=1, column=col+1).value = header
-
-        # 写入内容
-        for row in range(rowCount):
+            # 写入表头
             for col in range(columnCount):
-                value = model.data(model.index(row, col), Qt.DisplayRole)
-                sheet.cell(row=row+2, column=col+1).value = value
+                header = model.headerData(col, Qt.Horizontal, Qt.DisplayRole)
+                sheet.cell(row=1, column=col+1).value = header
 
-        # 删除孔号列
-        sheet.delete_cols(1)
+            # 写入内容
+            for row in range(rowCount):
+                for col in range(columnCount):
+                    value = model.data(model.index(row, col), Qt.DisplayRole)
+                    sheet.cell(row=row+2, column=col+1).value = value
+            wb.save(caculateResultPath)
 
-        # 清空指定单元格内容
-        for row in sheet.iter_rows(min_row=0, max_row=1):
-            for cell in row:
-                if cell.value in CELL_TO_CLEAR:
-                    cell.value = None
+            wb = load_workbook(caculateResultPath)
+            sheet = wb.active
+            # 删除孔号列
+            sheet.delete_cols(1)
 
-        # 合并单元格并设置标题
-        sheet.merge_cells(range_string=MERGE_RANGE)
-        sheet[MERGE_RANGE.split(":")[0]] = HEAD_TITLE
+            # 清空指定单元格内容
+            for row in sheet.iter_rows(min_row=0, max_row=1):
+                for cell in row:
+                    if cell.value in CELL_TO_CLEAR:
+                        cell.value = None
 
-        # 清理特定列的0值
-        for row in sheet.iter_rows(min_row=2, values_only=False):  
-            # 遍历第7至9列（索引为6到12）
-            for col_idx in range(6, 12):  
-                # 获取单元格对象  
-                cell = row[col_idx]
-                # 检查单元格的值是否为0  
-                if cell.value == 0 or cell.value == "0":  
-                    # 清空单元格内容  
-                    cell.value = None
-        # for row in sheet.iter_rows(min_row=2, min_col=7, max_col=9):
-        #     for cell in row:
-        #         if cell.value == 0:
-        #             cell.value = None
+            # 合并单元格并设置标题
+            sheet.merge_cells(range_string=MERGE_RANGE)
+            sheet[MERGE_RANGE.split(":")[0]] = HEAD_TITLE
 
-        # 保存Excel文件
-        wb.save(filePath)
+            # 清理特定列的0值
+            for row in sheet.iter_rows(min_row=2, values_only=False):  
+                # 遍历第7至9列（索引为6到12）
+                for col_idx in range(6, 12):  
+                    # 获取单元格对象  
+                    cell = row[col_idx]
+                    # 检查单元格的值是否为0  
+                    if cell.value == 0 or cell.value == "0":  
+                        # 清空单元格内容  
+                        cell.value = None
+            # for row in sheet.iter_rows(min_row=2, min_col=7, max_col=9):
+            #     for cell in row:
+            #         if cell.value == 0:
+            #             cell.value = None
 
-        # 更新日志和消息框
-        log_message = Module.logFormat("INFO", f'数据已成功导出到{filePath}!')
-        self.logTextBrowser.append(log_message)
-        logger.logger.info(log_message)
-        self.messagebox = Module.MessageBox(Icon="Information", text=log_message)
-        self.messagebox.show()
+            # 保存Excel文件
+            wb.save(exportResultPath)
+
+            # 更新日志和消息框
+            log_message = Module.logFormat("INFO", f'可上传数据已成功导出到{exportResultPath}!\n 分析数据已成功导出至{caculateResultPath}!\n 请检查数据是否正确。')
+            self.logTextBrowser.append(log_message)
+            logger.logger.info(log_message)
+            self.messagebox = Module.MessageBox(Icon="Information", text=log_message)
+            self.messagebox.show()
+        elif filePath["reg"] == 0:
+            logger.logger.error(filePath["msg"])
+            self.logTextBrowser.append(Module.logFormat("ERROR", filePath["msg"]))
 
     def handleIndexChanged(self):
         if self.SampleType5400ComboBox.currentText() == "核酸":
