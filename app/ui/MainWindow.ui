@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>DataProcess(v0.0.2 beta)</string>
+   <string>DataProcess(v0.1.0 beta)</string>
   </property>
   <property name="layoutDirection">
    <enum>Qt::LayoutDirection::LeftToRight</enum>
@@ -217,29 +217,8 @@
          </property>
          <item>
           <widget class="QCheckBox" name="ReName5400CheckBox">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="layoutDirection">
-            <enum>Qt::LayoutDirection::LeftToRight</enum>
-           </property>
-           <property name="autoFillBackground">
-            <bool>false</bool>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">background-color: rgba(255, 255, 255,0);</string>
-           </property>
-           <property name="inputMethodHints">
-            <set>Qt::InputMethodHint::ImhHiddenText</set>
-           </property>
            <property name="text">
             <string>图片重命名</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-           <property name="tristate">
-            <bool>false</bool>
            </property>
           </widget>
          </item>
@@ -522,22 +501,5 @@ QProgressBar::chunk {
   </layout>
  </widget>
  <resources/>
- <connections>
-  <connection>
-   <sender>ReName5400CheckBox</sender>
-   <signal>clicked(bool)</signal>
-   <receiver>Waring5400Label</receiver>
-   <slot>setVisible(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>794</x>
-     <y>64</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>794</x>
-     <y>88</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

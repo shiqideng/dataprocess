@@ -142,13 +142,6 @@ class Ui_Form(object):
         self.verticalLayout_2.setContentsMargins(-1, 15, -1, -1)
         self.ReName5400CheckBox = QCheckBox(Form)
         self.ReName5400CheckBox.setObjectName(u"ReName5400CheckBox")
-        self.ReName5400CheckBox.setEnabled(False)
-        self.ReName5400CheckBox.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
-        self.ReName5400CheckBox.setAutoFillBackground(False)
-        self.ReName5400CheckBox.setStyleSheet(u"background-color: rgba(255, 255, 255,0);")
-        self.ReName5400CheckBox.setInputMethodHints(Qt.InputMethodHint.ImhHiddenText)
-        self.ReName5400CheckBox.setChecked(True)
-        self.ReName5400CheckBox.setTristate(False)
 
         self.verticalLayout_2.addWidget(self.ReName5400CheckBox)
 
@@ -356,7 +349,6 @@ class Ui_Form(object):
 
 
         self.retranslateUi(Form)
-        self.ReName5400CheckBox.clicked["bool"].connect(self.Waring5400Label.setVisible)
 
         self.QTabWidget5400.setCurrentIndex(0)
 
@@ -365,7 +357,7 @@ class Ui_Form(object):
     # setupUi
 
     def retranslateUi(self, Form):
-        Form.setWindowTitle(QCoreApplication.translate("Form", u"DataProcess(v0.0.2 beta)", None))
+        Form.setWindowTitle(QCoreApplication.translate("Form", u"DataProcess(v0.1.0 beta)", None))
         self.Select5400label.setText(QCoreApplication.translate("Form", u"\u6587\u4ef6\u5939\u8def\u5f84\uff1a", None))
         self.Import5400FilePathToolButton.setText(QCoreApplication.translate("Form", u"...", None))
         self.Export5400Label.setText(QCoreApplication.translate("Form", u"\u7ed3\u679c\u4fdd\u5b58\u8def\u5f84\uff1a", None))
