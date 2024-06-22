@@ -1,6 +1,29 @@
 # 安捷伦5200/5300/5400数据处理软件开发文档
 
-## 一、开发环境
+## 一、更新日志
+
+v0.1.0(beta)
+
+- 新增
+  - 新增图片重命名模块
+  - lims上传结果表格数据从字符串改为整数
+- 优化
+  - 优化运算速度
+
+v0.0.2(beta)
+
+- 新增
+  - 导出数据时同时导出原始计算结果和lims上传结果
+  - lims上传结果表格最后3列清空内容
+- 优化
+  - 优化无明显目的峰摩尔浓度判定规则（<500pmol/L）
+  - 优化导出成功提示窗口结果描述
+
+v0.0.1(beta)
+
+- 初始版本
+
+## 二、开发环境
 
 1、开发语言：Python3.12
 
@@ -41,7 +64,6 @@ tzdata==2024.1
 urllib3==2.2.1
 Werkzeug==3.0.3
 wheel==0.43.0
-
 ```
 
 4、文件目录结构
@@ -79,12 +101,18 @@ wheel==0.43.0
 {"reg":1, "msg":"massage"}
 ```
 
-## 二、变量定义
-
 ## 三、判定逻辑
 
-## 其他
+## 四、其他
+
+### 1、安装package
 
 ```shell
 python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple package
+```
+
+### 2、打包
+
+```shell
+pyinstaller -w .\app\startup.py .\app\resource\logo.ico -n DataProcess
 ```
