@@ -1,5 +1,7 @@
 # 标准库
 import re
+import os
+import shutil
 import datetime
 from configparser import ConfigParser
 
@@ -86,10 +88,51 @@ def createModel(variable: dict) -> QStandardItemModel:
     model.setRowCount(rows)
     return model
 
+def reNameImage(params):
+    """
+    批量将输入文件夹路径下的图片复制到输出路径并重命名。
+    
+    :param params: 字典，包含两个键：
+                  'input_folder': 输入文件夹路径（str）
+                  'output_folder': 输出图片路径（str）
+    :return: 字典, 包含两个键:
+              'reg': 成功标志，1表示成功，0表示失败（int）
+              'msg': 错误信息，成功为空字符串，失败为错误提示（str）
+    """
+    IMAGEFORMAT = ['jpg', 'JPEG', 'png', 'gif', 'bmp']
+    patternGel = r"\bGel\b"
+    pattern_2 = r'\d{4}\s\d{2}\s\d{2}\s\d{2}H\s\d{2}M\s[A-H][0-9]*\s[.]'
+
+    input_folder = params.get('input_folder')
+    output_folder = params.get('output_folder')
+
+    if not os.path.isdir(input_folder):
+        return {'reg': 0, 'msg': f"输入路径 '{input_folder}' 不存在或不是文件夹"}
+
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+
+    try:
+        for filename in os.listdir(input_folder):
+            if not re.search(pattern=pattern_2,string=filename):
+                if not re.search(pattern=patternGel, string=filename.split(".")[0]):
+                    if filename.split(".")[-1] in IMAGEFORMAT:  # 示例图片扩展名，可按需调整
+                        # 获取原文件名中最后一个空格之后的内容作为新文件名
+                        new_name = filename.split(' ')[-1]
+                        src_path = os.path.join(input_folder, filename)
+                        dest_path = os.path.join(output_folder, new_name)
+                        
+                        shutil.copy2(src_path, dest_path)  # 复制并保留元数据
+        return {'reg': 1, 'msg': ""}
+    except Exception as e:
+        return {'reg': 0, 'msg': str(e)}
+    
+
 def caculateResult(DataFramePath:dict):
-    '''判断5400结果，并输出为dataframe
-    : param DataFramePath: dict
-    : return dict {"reg": 0, "msg": {"DataFrame": DataFrame}}
+    '''
+    判断5400结果，并输出为dataframe
+    param: dict(DataFramePath)
+    return: dict {"reg": 0, "msg": {"DataFrame": DataFrame}}
     '''
     # progress_changed.emit(10)
     
@@ -145,10 +188,10 @@ def caculateResult(DataFramePath:dict):
                     determineFragment = sampleDataFrame.loc[sampleDataFrame["Range"]==SMEARAVERAGWFRAG,"Avg. Size"].to_list()[0]
                     trailingFragment = sampleDataFrame.loc[sampleDataFrame["Range"]==SMEARTRAILING,"nmole/L"].to_list()[0]*1000 # 从nmole/L转换为pmole/L
                     # 计算占比情况
-                    totalMolarity = adaptorMolarity + smallFragMolarity + averageFragMolarity
-                    adaptorPercentage = safeDivide(adaptorMolarity,totalMolarity)
-                    smallFrafPercentage = safeDivide(smallFragMolarity,totalMolarity)
-                    trailingPercentage = safeDivide(trailingFragment,totalMolarity)
+                    totalMolarity = int(adaptorMolarity + smallFragMolarity + averageFragMolarity)
+                    adaptorPercentage = int(safeDivide(adaptorMolarity,totalMolarity))
+                    smallFrafPercentage = int(safeDivide(smallFragMolarity,totalMolarity))
+                    trailingPercentage = int(safeDivide(trailingFragment,totalMolarity))
                     # 判断样品是否合格
                     result = ""
                     judge = ""
