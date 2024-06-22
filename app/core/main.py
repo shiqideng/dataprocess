@@ -152,11 +152,8 @@ class MainWindow(QWidget, Ui_Form):
             try:
                 self.upDatePrograssBar(0)
                 self.preview5400()
-                self.timer = QTimer(self)
-                self.timer.start(1000)
                 self.QTabWidget5400.setCurrentIndex(1)
                 self.upDatePrograssBar(15)
-                time.sleep(1)
                 filePath = findFilePath({"path": self.Import5400FilePathLineEdit.text(), "SampleType":self.SampleType5400ComboBox.currentText()})
                 filePath = filePath.getFilePath()
                 # 判断是否选中重命名对话框
@@ -169,14 +166,14 @@ class MainWindow(QWidget, Ui_Form):
                     if rename["reg"] == 1:
                         self.logTextBrowser.append(Module.logFormat("INFO", "图片重命名成功！"))
                         logger.logger.info("图片重命名成功！")
+                        self.upDatePrograssBar(20)
                     elif rename["reg"] == 0:
                         self.logTextBrowser.append(Module.logFormat("ERROR", rename["msg"]))
                         logger.logger.error(rename["msg"])
 
                 if filePath["reg"] == 1:
                     self.saveName = filePath["msg"]["saveName"]
-                    self.upDatePrograssBar(20)
-                    time.sleep(1)
+                    self.upDatePrograssBar(30)
                     self.logTextBrowser.append(Module.logFormat("INFO", f"保存名称：{self.saveName}.xlsx"))
                     logger.logger.info(f"文库计算结果保存名称：{self.saveName}.xlsx")
                     if self.SampleType5400ComboBox.currentText() == "核酸":
@@ -192,14 +189,12 @@ class MainWindow(QWidget, Ui_Form):
                         self.worker = Module.caculateResult(filePath)
                         if self.worker["reg"] == 1:
                             self.upDatePrograssBar(40)
-                            time.sleep(1)
                             # ResultModule = self.worker.prograssChange.connect(self.upDatePrograssBar)
                             self.logTextBrowser.append(Module.logFormat("INFO", "开始计算文库数据..."))
                             Result = Module.createModel({"type": 1, "path":self.worker["msg"]})
                             logger.logger.info("文库数据计算完成")
                             self.logTextBrowser.append(Module.logFormat("INFO", "文库数据计算完成"))
                             self.upDatePrograssBar(90)
-                            time.sleep(1)
                             # self.ResultTableLabChip5400TableView.setModel(LabChipResult)
                             self.ResultTableAgilent5400TableView.setModel(Result)
                             # 结果判定下拉列表选择
@@ -207,7 +202,6 @@ class MainWindow(QWidget, Ui_Form):
                             # self.ResultTableAgilent5400TableView.setItemDelegateForColumn(6,Module.MyComboBoxDelegate(judgeList, self.ResultTableAgilent5400TableView))
                             self.upDatePrograssBar(99)
                             self.logTextBrowser.append(Module.logFormat("INFO", "显示数据..."))
-                            time.sleep(1)
                             self.upDatePrograssBar(100)
                             self.messageBox = Module.MessageBox(Icon="Information", text="计算完成")
                         elif self.worker["reg"] == 0:
