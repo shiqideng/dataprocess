@@ -29,9 +29,8 @@ class MainWindow(QWidget, Ui_Form):
         self.QTabWidget5400.removeTab(1)
         # 隐藏labchip标签页
         self.QTabWidget5400.removeTab(1)
+
         self.ReName5400CheckBox.setChecked(False)
-        self.ReName5400CheckBox.setDisabled(True)
-        self.Waring5400Label.setVisible(False)
         self.saveName = ""
 
         # 使用lambda函数来传递参数
@@ -119,10 +118,15 @@ class MainWindow(QWidget, Ui_Form):
                     if cell.value == 0 or cell.value == "0":  
                         # 清空单元格内容  
                         cell.value = None
-            # for row in sheet.iter_rows(min_row=2, min_col=7, max_col=9):
-            #     for cell in row:
-            #         if cell.value == 0:
-            #             cell.value = None
+
+            # 将第3至5列单元格中数字从str转换为int
+            for row in sheet.iter_rows(min_row=2, min_col=2, max_col=4):
+                for cell in row:
+                    if cell.value is not None and isinstance(cell.value, str):
+                        # 将字符串转换为浮点数(带小数的字符串无法直接转换为整数)
+                        value = float(cell.value)
+                        # 从浮点数转换为整数（四舍五入）
+                        cell.value = round(value)
 
             # 保存Excel文件
             wb.save(exportResultPath)
@@ -155,6 +159,20 @@ class MainWindow(QWidget, Ui_Form):
                 time.sleep(1)
                 filePath = findFilePath({"path": self.Import5400FilePathLineEdit.text(), "SampleType":self.SampleType5400ComboBox.currentText()})
                 filePath = filePath.getFilePath()
+                # 判断是否选中重命名对话框
+                if self.ReName5400CheckBox.isChecked():
+                    params = {
+                        "input_folder": self.Import5400FilePathLineEdit.text(),
+                        "output_folder": self.Export5400FilePathLineEdit.text(),
+                    }
+                    rename = Module.reNameImage(params)
+                    if rename["reg"] == 1:
+                        self.logTextBrowser.append(Module.logFormat("INFO", "图片重命名成功！"))
+                        logger.logger.info("图片重命名成功！")
+                    elif rename["reg"] == 0:
+                        self.logTextBrowser.append(Module.logFormat("ERROR", rename["msg"]))
+                        logger.logger.error(rename["msg"])
+
                 if filePath["reg"] == 1:
                     self.saveName = filePath["msg"]["saveName"]
                     self.upDatePrograssBar(20)
@@ -216,6 +234,7 @@ class MainWindow(QWidget, Ui_Form):
         else:
             self.logTextBrowser.append(Module.logFormat("ERROR", "请选择导入文件路径。"))
             logger.logger.error("未选择导入文件路径。")
+        self.ReName5400CheckBox.setChecked(False)
             
     def clear5400(self):
         self.messagebox = Module.MessageBox(Icon="Question", text="确定清空所有数据吗？")
