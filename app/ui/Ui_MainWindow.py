@@ -26,7 +26,7 @@ class Ui_Form(object):
         if not Form.objectName():
             Form.setObjectName(u"Form")
         Form.resize(904, 556)
-        Form.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
+        Form.setLayoutDirection(Qt.LeftToRight)
         Form.setStyleSheet(u"QMainWindow {\n"
 "  border-radius: 200px;\n"
 "  background-color: rgba(255, 255, 255,0);\n"
@@ -326,7 +326,7 @@ class Ui_Form(object):
 
         self.DataProcess5400ProgressBar = QProgressBar(Form)
         self.DataProcess5400ProgressBar.setObjectName(u"DataProcess5400ProgressBar")
-        self.DataProcess5400ProgressBar.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
+        self.DataProcess5400ProgressBar.setLayoutDirection(Qt.LeftToRight)
         self.DataProcess5400ProgressBar.setStyleSheet(u"QProgressBar {  \n"
 "    border: 2px solid grey;  \n"
 "    border-radius: 10px;  \n"
@@ -339,11 +339,9 @@ class Ui_Form(object):
 "    border-radius: 8px;  \n"
 "}")
         self.DataProcess5400ProgressBar.setValue(100)
-        self.DataProcess5400ProgressBar.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.DataProcess5400ProgressBar.setTextVisible(True)
-        self.DataProcess5400ProgressBar.setOrientation(Qt.Orientation.Horizontal)
         self.DataProcess5400ProgressBar.setInvertedAppearance(False)
-        self.DataProcess5400ProgressBar.setTextDirection(QProgressBar.Direction.BottomToTop)
+        self.DataProcess5400ProgressBar.setTextDirection(QProgressBar.TopToBottom)
 
         self.verticalLayout_4.addWidget(self.DataProcess5400ProgressBar)
 
@@ -357,7 +355,7 @@ class Ui_Form(object):
     # setupUi
 
     def retranslateUi(self, Form):
-        Form.setWindowTitle(QCoreApplication.translate("Form", u"DataProcess(v0.1.0 beta)", None))
+        Form.setWindowTitle(QCoreApplication.translate("Form", u"DataProcess(v0.1.1 beta)", None))
         self.Select5400label.setText(QCoreApplication.translate("Form", u"\u6587\u4ef6\u5939\u8def\u5f84\uff1a", None))
         self.Import5400FilePathToolButton.setText(QCoreApplication.translate("Form", u"...", None))
         self.Export5400Label.setText(QCoreApplication.translate("Form", u"\u7ed3\u679c\u4fdd\u5b58\u8def\u5f84\uff1a", None))
@@ -379,13 +377,10 @@ class Ui_Form(object):
         self.QTabWidget5400.setTabText(self.QTabWidget5400.indexOf(self.ResultTableAgilent5400), QCoreApplication.translate("Form", u"\u7ed3\u679c\u9884\u89c82100\u683c\u5f0f", None))
         self.logTextBrowser.setMarkdown("")
         self.logTextBrowser.setHtml(QCoreApplication.translate("Form", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
-"hr { height: 1px; border-width: 0; }\n"
-"li.unchecked::marker { content: \"\\2610\"; }\n"
-"li.checked::marker { content: \"\\2612\"; }\n"
-"</style></head><body style=\" font-family:'Microsoft YaHei UI'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>", None))
+"</style></head><body style=\" font-family:'SimSun'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Microsoft YaHei UI';\"><br /></p></body></html>", None))
         self.QTabWidget5400.setTabText(self.QTabWidget5400.indexOf(self.logTab), QCoreApplication.translate("Form", u"\u65e5\u5fd7", None))
     # retranslateUi
 
