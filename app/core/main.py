@@ -13,9 +13,14 @@ from openpyxl import Workbook, load_workbook
 # 本地包
 from app.ui.Ui_MainWindow import Ui_Form
 from app.lib import Module, logger
+
+
 class MainWindow(QWidget, Ui_Form):
     def __init__(self):
         super(MainWindow, self).__init__()
+        self.messagebox = None
+        self.saveName = None
+        self.analysis5400Status = False
         self.setupUi(self)
         self.run()
 
@@ -31,7 +36,6 @@ class MainWindow(QWidget, Ui_Form):
         self.QTabWidget5400.removeTab(1)
 
         self.ReName5400CheckBox.setChecked(False)
-        self.saveName = ""
 
         # 使用lambda函数来传递参数
         self.Import5400FilePathToolButton.clicked.connect(lambda: self.selectFile("Import5400FilePathLineEdit"))
@@ -50,96 +54,102 @@ class MainWindow(QWidget, Ui_Form):
             getattr(self, lineEditName).setText(filePath)
         else:
             logger.logger.info("用户取消了文件夹选择操作或出现了错误。")
-            self.logTextBrowser.append(Module.logFormat("INFO" ,"用户取消了文件夹选择操作或出现了错误。"))
-    
+            self.logTextBrowser.append(Module.logFormat("INFO", "用户取消了文件夹选择操作或出现了错误。"))
+
     def exportToExcel(self):
-        CELL_TO_CLEAR = ["备注", "空列", "原始质量浓度", "原始摩尔浓度"]
-        MERGE_RANGE = "G1:H1"
-        HEAD_TITLE = "片段大小"
-        
-        def get_file_path():
-            dir_path = self.Export5400FilePathLineEdit.text()
-            ensure_dir(dir_path)
-            return {"reg":1, "msg":{"exportResultPath":os.path.join(dir_path, f"{self.saveName}.xlsx"),"caculateResultPath":os.path.join(dir_path, f"{self.saveName}_backup.xlsx")}}
-        
-        def ensure_dir(path):
-            """Ensure directory exists."""
-            if not os.path.exists(path):
-                os.makedirs(path)
+        if self.analysis5400Status:
+            CELL_TO_CLEAR = ["备注", "空列", "原始质量浓度", "原始摩尔浓度"]
+            MERGE_RANGE = "G1:H1"
+            HEAD_TITLE = "片段大小"
 
-        # 获取文件路径
-        filePath = get_file_path()
-        if filePath["reg"] == 1:
-            caculateResultPath = filePath["msg"]["caculateResultPath"]
-            exportResultPath = filePath["msg"]["exportResultPath"]
-            # 获取模型数据
-            model = self.ResultTableAgilent5400TableView.model()
-            columnCount = model.columnCount()
-            rowCount = model.rowCount()
+            def get_file_path():
+                dir_path = self.Export5400FilePathLineEdit.text()
+                ensure_dir(dir_path)
+                return {"reg": 1, "msg": {"exportResultPath": os.path.join(dir_path, f"{self.saveName}.xlsx"),
+                                          "caculateResultPath": os.path.join(dir_path, f"{self.saveName}_backup.xlsx")}}
 
-            # 创建工作簿
-            wb = Workbook()
-            sheet = wb.active
+            def ensure_dir(path):
+                """Ensure directory exists."""
+                if not os.path.exists(path):
+                    os.makedirs(path)
 
-            # 写入表头
-            for col in range(columnCount):
-                header = model.headerData(col, Qt.Horizontal, Qt.DisplayRole)
-                sheet.cell(row=1, column=col+1).value = header
+            # 获取文件路径
+            filePath = get_file_path()
+            if filePath["reg"] == 1:
+                caculateResultPath = filePath["msg"]["caculateResultPath"]
+                exportResultPath = filePath["msg"]["exportResultPath"]
+                # 获取模型数据
+                model = self.ResultTableAgilent5400TableView.model()
+                columnCount = model.columnCount()
+                rowCount = model.rowCount()
 
-            # 写入内容
-            for row in range(rowCount):
+                # 创建工作簿
+                wb = Workbook()
+                sheet = wb.active
+
+                # 写入表头
                 for col in range(columnCount):
-                    value = model.data(model.index(row, col), Qt.DisplayRole)
-                    sheet.cell(row=row+2, column=col+1).value = value
-            wb.save(caculateResultPath)
+                    header = model.headerData(col, Qt.Horizontal, Qt.DisplayRole)
+                    sheet.cell(row=1, column=col + 1).value = header
 
-            wb = load_workbook(caculateResultPath)
-            sheet = wb.active
-            # 删除孔号列
-            sheet.delete_cols(1)
+                # 写入内容
+                for row in range(rowCount):
+                    for col in range(columnCount):
+                        value = model.data(model.index(row, col), Qt.DisplayRole)
+                        sheet.cell(row=row + 2, column=col + 1).value = value
+                wb.save(caculateResultPath)
 
-            # 清空指定单元格内容
-            for row in sheet.iter_rows(min_row=0, max_row=1):
-                for cell in row:
-                    if cell.value in CELL_TO_CLEAR:
-                        cell.value = None
+                wb = load_workbook(caculateResultPath)
+                sheet = wb.active
+                # 删除孔号列
+                sheet.delete_cols(1)
 
-            # 合并单元格并设置标题
-            sheet.merge_cells(range_string=MERGE_RANGE)
-            sheet[MERGE_RANGE.split(":")[0]] = HEAD_TITLE
+                # 清空指定单元格内容
+                for row in sheet.iter_rows(min_row=0, max_row=1):
+                    for cell in row:
+                        if cell.value in CELL_TO_CLEAR:
+                            cell.value = None
 
-            # 清理特定列的0值
-            for row in sheet.iter_rows(min_row=2, values_only=False):  
-                # 遍历第7至9列（索引为6到12）
-                for col_idx in range(6, 12):  
-                    # 获取单元格对象  
-                    cell = row[col_idx]
-                    # 检查单元格的值是否为0  
-                    if cell.value == 0 or cell.value == "0":  
-                        # 清空单元格内容  
-                        cell.value = None
+                # 合并单元格并设置标题
+                sheet.merge_cells(range_string=MERGE_RANGE)
+                sheet[MERGE_RANGE.split(":")[0]] = HEAD_TITLE
 
-            # 将第3至5列单元格中数字从str转换为int
-            for row in sheet.iter_rows(min_row=2, min_col=2, max_col=4):
-                for cell in row:
-                    if cell.value is not None and isinstance(cell.value, str):
-                        # 将字符串转换为浮点数(带小数的字符串无法直接转换为整数)
-                        value = float(cell.value)
-                        # 从浮点数转换为整数（四舍五入）
-                        cell.value = round(value)
+                # 清理特定列的0值
+                for row in sheet.iter_rows(min_row=2, values_only=False):
+                    # 遍历第7至9列（索引为6到12）
+                    for col_idx in range(6, 12):
+                        # 获取单元格对象
+                        cell = row[col_idx]
+                        # 检查单元格的值是否为0
+                        if cell.value == 0 or cell.value == "0":
+                            # 清空单元格内容
+                            cell.value = None
 
-            # 保存Excel文件
-            wb.save(exportResultPath)
+                # 将第3至5列单元格中数字从str转换为float
+                # for row in sheet.iter_rows(min_row=2, min_col=2, max_col=4):
+                #     for cell in row:
+                #         if cell.value is not None and isinstance(cell.value, str):
+                #             # 将字符串转换为浮点数(带小数的字符串无法直接转换为整数)
+                #             value = float(cell.value)
+                #             # 从浮点数转换为整数（四舍五入）
+                #             cell.value = round(value)
 
-            # 更新日志和消息框
-            log_message = Module.logFormat("INFO", f'可上传数据已成功导出到{exportResultPath}!\n 分析数据已成功导出至{caculateResultPath}!\n 请检查数据是否正确。')
-            self.logTextBrowser.append(log_message)
-            logger.logger.info(log_message)
-            self.messagebox = Module.MessageBox(Icon="Information", text=log_message)
+                # 保存Excel文件
+                wb.save(exportResultPath)
+
+                # 更新日志和消息框
+                log_message = Module.logFormat("INFO",
+                                               f'可上传数据已成功导出到{exportResultPath}!\n 分析数据已成功导出至{caculateResultPath}!\n 请检查数据是否正确。')
+                self.logTextBrowser.append(log_message)
+                logger.logger.info(log_message)
+                self.messagebox = Module.MessageBox(Icon="Information", text=log_message)
+                self.messagebox.show()
+            elif filePath["reg"] == 0:
+                logger.logger.error(filePath["msg"])
+                self.logTextBrowser.append(Module.logFormat("ERROR", filePath["msg"]))
+        else:
+            self.messagebox = Module.MessageBox(Icon="Warning", text="未分析数据，无法导出结果！")
             self.messagebox.show()
-        elif filePath["reg"] == 0:
-            logger.logger.error(filePath["msg"])
-            self.logTextBrowser.append(Module.logFormat("ERROR", filePath["msg"]))
 
     def handleIndexChanged(self):
         if self.SampleType5400ComboBox.currentText() == "核酸":
@@ -154,7 +164,8 @@ class MainWindow(QWidget, Ui_Form):
                 self.preview5400()
                 self.QTabWidget5400.setCurrentIndex(1)
                 self.upDatePrograssBar(15)
-                filePath = findFilePath({"path": self.Import5400FilePathLineEdit.text(), "SampleType":self.SampleType5400ComboBox.currentText()})
+                filePath = findFilePath({"path": self.Import5400FilePathLineEdit.text(),
+                                         "SampleType": self.SampleType5400ComboBox.currentText()})
                 filePath = filePath.getFilePath()
                 # 判断是否选中重命名对话框
                 if self.ReName5400CheckBox.isChecked():
@@ -185,13 +196,14 @@ class MainWindow(QWidget, Ui_Form):
                         qualityTablePth = filePath["msg"]["qualityTable"]
                         global smearTablePath
                         smearTablePath = filePath["msg"]["smearTable"]
-                        filePath = {"SampleType":"文库", "qualityTablepath": qualityTablePth, "smearTablepath":smearTablePath}
+                        filePath = {"SampleType": "文库", "qualityTablepath": qualityTablePth,
+                                    "smearTablepath": smearTablePath}
                         self.worker = Module.caculateResult(filePath)
                         if self.worker["reg"] == 1:
                             self.upDatePrograssBar(40)
                             # ResultModule = self.worker.prograssChange.connect(self.upDatePrograssBar)
                             self.logTextBrowser.append(Module.logFormat("INFO", "开始计算文库数据..."))
-                            Result = Module.createModel({"type": 1, "path":self.worker["msg"]})
+                            Result = Module.createModel({"type": 1, "path": self.worker["msg"]})
                             logger.logger.info("文库数据计算完成")
                             self.logTextBrowser.append(Module.logFormat("INFO", "文库数据计算完成"))
                             self.upDatePrograssBar(90)
@@ -204,32 +216,36 @@ class MainWindow(QWidget, Ui_Form):
                             self.logTextBrowser.append(Module.logFormat("INFO", "显示数据..."))
                             self.upDatePrograssBar(100)
                             self.messageBox = Module.MessageBox(Icon="Information", text="计算完成")
+                            self.analysis5400Status = True
                         elif self.worker["reg"] == 0:
                             self.messageBox = Module.MessageBox(Icon="Critical", text="计算失败")
                             self.logTextBrowser.append(Module.logFormat("ERROR", self.worker["msg"]))
                             logger.logger.error(self.worker["msg"])
                         # 设置表格行和列自适应
-                        self.ResultTableLabChip5400TableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+                        self.ResultTableLabChip5400TableView.horizontalHeader().setSectionResizeMode(
+                            QHeaderView.Stretch)
                         self.ResultTableLabChip5400TableView.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
                         self.ResultTableLabChip5400TableView.resizeColumnsToContents()
 
-                        self.ResultTableAgilent5400TableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+                        self.ResultTableAgilent5400TableView.horizontalHeader().setSectionResizeMode(
+                            QHeaderView.Stretch)
                         self.ResultTableAgilent5400TableView.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
                         self.ResultTableAgilent5400TableView.resizeColumnsToContents()
+
                 else:
                     self.logTextBrowser.append(Module.logFormat("ERROR", str(filePath["msg"])))
                     logger.logger.error(str(filePath["msg"]))
             except IOError:
-                self.logTextBrowser.append(Module.logFormat("ERROR", "部分文件存在异常"+ str(IOError)))
-                logger.logger.error("部分文件存在异常"+ str(IOError))
+                self.logTextBrowser.append(Module.logFormat("ERROR", "部分文件存在异常" + str(IOError)))
+                logger.logger.error("部分文件存在异常" + str(IOError))
             except Exception as e:
-                self.logTextBrowser.append(Module.logFormat("ERROR", "发生意外错误"+ str(e)))
-                logger.logger.error("发生意外错误"+ str(e))
+                self.logTextBrowser.append(Module.logFormat("ERROR", "发生意外错误" + str(e)))
+                logger.logger.error("发生意外错误" + str(e))
         else:
             self.logTextBrowser.append(Module.logFormat("ERROR", "请选择导入文件路径。"))
             logger.logger.error("未选择导入文件路径。")
         self.ReName5400CheckBox.setChecked(False)
-            
+
     def clear5400(self):
         self.messagebox = Module.MessageBox(Icon="Question", text="确定清空所有数据吗？")
         self.messagebox.resultReady.connect(self.handleResultReady)
@@ -243,7 +259,7 @@ class MainWindow(QWidget, Ui_Form):
             self.QualityTable5400TableView,
             self.ResultTableAgilent5400TableView
         ]
-        
+
         # 清除文本框中的数据
         self.Export5400FilePathLineEdit.clear()
         self.Import5400FilePathLineEdit.clear()
@@ -261,11 +277,11 @@ class MainWindow(QWidget, Ui_Form):
                 self.logTextBrowser.append(format("ERROR"), f"Warning: Table view {tableView} is None.")
                 logger.logger.warning(f"Warning: Table view {tableView} is None.")
 
-                
     def preview5400(self):
         if self.Import5400FilePathLineEdit.text():
             try:
-                filePath = findFilePath({"path": self.Import5400FilePathLineEdit.text(), "SampleType":self.SampleType5400ComboBox.currentText()})
+                filePath = findFilePath({"path": self.Import5400FilePathLineEdit.text(),
+                                         "SampleType": self.SampleType5400ComboBox.currentText()})
                 filePath = filePath.getFilePath()
                 if filePath["reg"] == 1:
                     self.saveName = filePath["msg"]["saveName"]
@@ -277,7 +293,7 @@ class MainWindow(QWidget, Ui_Form):
                         # self.logTextBrowser.append(Module.logFormat("INFO", "qualityTablePath:" + str(filePath["msg"]["qualityTable"])))
                         # self.logTextBrowser.append(Module.logFormat("INFO", "smearTablePath:" + str(filePath["msg"]["smearTable"])))
                         # self.logTextBrowser.append(Module.logFormat("INFO", "peakTablePath:" + str(filePath["msg"]["peakTable"])))
-                        
+
                         # global qualityTablepath
                         # qualityTablePath = filePath["msg"]["qualityTable"]
                         # quality = Module.createModel(qualityTablePath)
@@ -304,7 +320,8 @@ class MainWindow(QWidget, Ui_Form):
 
                     elif self.SampleType5400ComboBox.currentText() == "文库":
                         # self.logTextBrowser.append(Module.logFormat("INFO", "qualityTablePath:" + str(filePath["msg"]["qualityTable"])))
-                        self.logTextBrowser.append(Module.logFormat("INFO", "smearTablePath:" + str(filePath["msg"]["smearTable"])))
+                        self.logTextBrowser.append(
+                            Module.logFormat("INFO", "smearTablePath:" + str(filePath["msg"]["smearTable"])))
                         logger.logger.info("smearTablePath:" + str(filePath["msg"]["smearTable"]))
 
                         # # 预览QualityTable
@@ -316,39 +333,37 @@ class MainWindow(QWidget, Ui_Form):
                         # self.QualityTable5400TableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
                         # self.QualityTable5400TableView.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
                         # self.QualityTable5400TableView.resizeColumnsToContents()
-                        
+
                         global smearTablepath
                         smearTablepath = filePath["msg"]["smearTable"]
-                        smear = Module.createModel({"type": 2, "path":smearTablepath})
+                        smear = Module.createModel({"type": 2, "path": smearTablepath})
                         self.SmearTable5400TableView.setModel(smear)
                         # 设置表格行和列自适应
                         self.SmearTable5400TableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
                         self.SmearTable5400TableView.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
-                        
+
                 else:
                     self.logTextBrowser.append(Module.logFormat("ERROR", str(filePath["msg"])))
                     logger.logger.error(str(filePath["msg"]))
             except IOError:
-                self.logTextBrowser.append(Module.logFormat("ERROR", "部分文件存在异常"+ str(IOError)))
-                logger.logger.error("部分文件存在异常"+ str(IOError))
+                self.logTextBrowser.append(Module.logFormat("ERROR", "部分文件存在异常" + str(IOError)))
+                logger.logger.error("部分文件存在异常" + str(IOError))
             except Exception as e:
-                self.logTextBrowser.append(Module.logFormat("ERROR", "发生意外错误"+ str(e)))
-                logger.logger.error("发生意外错误"+ str(e))
+                self.logTextBrowser.append(Module.logFormat("ERROR", "发生意外错误" + str(e)))
+                logger.logger.error("发生意外错误" + str(e))
         else:
             self.logTextBrowser.append(Module.logFormat("ERROR", "请选择导入文件路径。"))
             logger.logger.error("未选择导入文件路径。")
 
-
-    
     def getSystem(self):
         try:
             if sys.platform == 'linux' or sys.platform == 'darwin':
-                importPath = Module.getConfig('conf/config.ini','Import Paths', 'linux_path')
-                exportPath = Module.getConfig('conf/config.ini','Export Paths', 'linux_path')
+                importPath = Module.getConfig('conf/config.ini', 'Import Paths', 'linux_path')
+                exportPath = Module.getConfig('conf/config.ini', 'Export Paths', 'linux_path')
             elif sys.platform == 'win32':
-                importPath = Module.getConfig('conf/config.ini','Import Paths', 'win32_path')
-                exportPath = Module.getConfig('conf/config.ini','Export Paths', 'win32_path')
+                importPath = Module.getConfig('conf/config.ini', 'Import Paths', 'win32_path')
+                exportPath = Module.getConfig('conf/config.ini', 'Export Paths', 'win32_path')
             # 使用 os.path.join 来构造路径，即使这里的路径已经是完整的
             importPath = os.path.join(importPath["msg"])
             exportPath = os.path.join(exportPath["msg"])
@@ -360,14 +375,14 @@ class MainWindow(QWidget, Ui_Form):
             # 在这里处理可能的异常，比如读取配置文件失败、路径不存在等
             self.logTextBrowser.append(Module.logFormat("ERROR", str(e)))
             logger.logger.error(str(e))
-    
+
     def upDatePrograssBar(self, value):
         self.DataProcess5400ProgressBar.setValue(value)
-    
+
     @Slot(dict)
     def handleResultReady(self, message):
         if message["reg"] == 1:
-            self.logTextBrowser.append(Module.logFormat("INFO", "用户确认清除内容" ))
+            self.logTextBrowser.append(Module.logFormat("INFO", "用户确认清除内容"))
             logger.logger.info("用户确认清空内容")
             self.clearData()
             # self.logOperationSuccess()
@@ -422,7 +437,8 @@ class findFilePath:
                 if self.sampleType == "文库":
                     return {"reg": 1, "msg": {"smearTable": smearTable, "qualityTable": "", "saveName": match.group()}}
                 elif self.sampleType == "核酸":
-                    return {"reg": 1, "msg": {"smearTable": smearTable, "qualityTable": "", "peakTable": peakTable, "saveName": match.group()}}
+                    return {"reg": 1, "msg": {"smearTable": smearTable, "qualityTable": "", "peakTable": peakTable,
+                                              "saveName": match.group()}}
         except Exception as e:
             # 对潜在的异常进行处理
             return {"reg": 0, "msg": e}
