@@ -120,5 +120,5 @@ python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple package
 ### 2、打包
 
 ```shell
-pyinstaller -w .\app\startup.py .\app\resource\logo.ico -n DataProcess
+pyinstaller -w .\app\startup.py -i .\app\resource\logo.ico -n DataProcess
 ```
