@@ -9,7 +9,7 @@ from configparser import ConfigParser
 import numpy
 import pandas as pd
 from PySide6.QtGui import QStandardItemModel, QStandardItem
-from PySide6.QtWidgets import QMessageBox, QAbstractButton, QStyledItemDelegate, QComboBox, QListView
+from PySide6.QtWidgets import QMessageBox, QAbstractButton, QStyledItemDelegate, QComboBox
 from PySide6.QtCore import Qt, Signal, Slot
 
 
@@ -60,7 +60,7 @@ def getConfig(configPath: str, section: str, option: str) -> dict[str, str | int
 
 def createModel(variable: dict) -> QStandardItemModel:
     """
-    :param  {type, path} -> 类型：1 dataform， 2 file Path
+    param  {type, path} -> 类型：1 dataform， 2 file Path
     :return: QStandardItemModel
     """
     # 初始化模型
@@ -146,24 +146,29 @@ def caculateResult(DataFramePath: dict):
 
     if SampleType == "核酸":
         try:
-            qualityTable = detectEncoding(DataFramePath["qualityTablepath"])
-            smearTable = detectEncoding(DataFramePath["smearTablepath"])
+            qualityTable = detectEncoding(DataFramePath["qualityTablePath"])
+            smearTable = detectEncoding(DataFramePath["smearTablePath"])
+            peakTable = detectEncoding(DataFramePath["peakTablePath"])
         except FileNotFoundError:
             return {"reg": 0, "msg": f"文件路径错误{FileNotFoundError}"}
     elif SampleType == "文库":
         try:
-            smearTable = detectEncoding(DataFramePath["smearTablepath"])
+            smearTable = detectEncoding(DataFramePath["smearTablePath"])
+            peakTable = detectEncoding(DataFramePath["peakTablePath"])
             column = ["Well", "Sample ID", "Range", "ng/uL", "nmole/L", "Avg. Size"]
             SMEARADAPTOR = "100 bp to 150 bp"
-            SMWAESMALLFRAG = "150 bp to 260 bp"
+            SMEARSMALLFRAG = "150 bp to 260 bp"
             SMEARAVERAGWFRAG = "200 bp to 4000 bp"
             SMEARTRAILING = "650 bp to 4000 bp"
+            SMEARTOTAL = "100 bp to 4700 bp"
             # 格式化样本数据，去除无SmearPeak的样本
             smearTable = smearTable.dropna(subset=["Range"])
             smearTable = smearTable.dropna(subset=["Sample ID"])
             smearTable = smearTable.loc[:, column]
             smearTable.fillna(0, inplace=True)
 
+            # 格式化peak table，去除空样本行
+            peakTable = peakTable.dropna(subset="Sample ID")
             # 获取样本名称输出一个列表
             newSmearTable = smearTable.duplicated(subset=["Sample ID"])
             newSmearTableIndex = newSmearTable[newSmearTable == False].index
@@ -178,37 +183,41 @@ def caculateResult(DataFramePath: dict):
             resultDataFrame = pd.DataFrame(columns=resultDataFrameColumn)
             for sampleID in dupSampleIDList:
                 sampleDataFrame = smearTable[smearTable["Sample ID"] == sampleID]
+                peakDateFrame = peakTable[peakTable["Sample ID"] == sampleID]
                 wellID = sampleDataFrame.iloc[0]["Well"]
                 mask1 = sampleDataFrame['Range'].str.contains(SMEARADAPTOR, na=False)
-                mask2 = sampleDataFrame['Range'].str.contains(SMWAESMALLFRAG, na=False)
+                mask2 = sampleDataFrame['Range'].str.contains(SMEARSMALLFRAG, na=False)
                 mask3 = sampleDataFrame['Range'].str.contains(SMEARAVERAGWFRAG, na=False)
                 mask4 = sampleDataFrame['Range'].str.contains(SMEARTRAILING, na=False)
+                mask5 = sampleDataFrame['Range'].str.contains(SMEARTOTAL, na=False)
                 size = len(sampleDataFrame)
                 # 检查需要做判断的SmearPeak是否存在
-                if mask1.any() and mask2.any() and mask3.any() and mask4.any():
+                if mask1.any() and mask2.any() and mask3.any() and mask4.any() and mask5.any():
                     adaptorMolarity = \
-                        sampleDataFrame.loc[sampleDataFrame["Range"] == SMEARADAPTOR, "nmole/L"].to_list()[
+                        sampleDataFrame.loc[sampleDataFrame['Range'] == SMEARADAPTOR, 'nmole/L'].to_list()[
                             0] * 1000  # 从nmole/L转换为pmole/L
                     smallFragMolarity = \
-                        sampleDataFrame.loc[sampleDataFrame["Range"] == SMWAESMALLFRAG, "nmole/L"].to_list()[
+                        sampleDataFrame.loc[sampleDataFrame['Range'] == SMEARSMALLFRAG, 'nmole/L'].to_list()[
                             0] * 1000  # 从nmole/L转换为pmole/L
                     averageFragMolarity = \
-                        sampleDataFrame.loc[sampleDataFrame["Range"] == SMEARAVERAGWFRAG, "nmole/L"].to_list()[
+                        sampleDataFrame.loc[sampleDataFrame['Range'] == SMEARAVERAGWFRAG, 'nmole/L'].to_list()[
                             0] * 1000  # 从nmole/L转换为pmole/L
-                    averageFragConc = \
-                        sampleDataFrame.loc[sampleDataFrame["Range"] == SMEARAVERAGWFRAG, "ng/uL"].to_list()[
+                    averageFragConcentration = \
+                        peakDateFrame.loc[0, 'Total concentration (ng/uL)'].to_list()[
                             0] * 1000  # 从ng/uL转换为pg/uL
                     averageFragment = \
-                        sampleDataFrame.loc[sampleDataFrame["Range"] == SMEARAVERAGWFRAG, "Avg. Size"].to_list()[0]
+                        sampleDataFrame.loc[sampleDataFrame['Range'] == SMEARAVERAGWFRAG, 'Avg. Size'].to_list()[0]
                     determineFragment = \
-                        sampleDataFrame.loc[sampleDataFrame["Range"] == SMEARAVERAGWFRAG, "Avg. Size"].to_list()[0]
+                        sampleDataFrame.loc[sampleDataFrame['Range'] == SMEARAVERAGWFRAG, 'Avg. Size'].to_list()[0]
                     trailingFragment = \
-                        sampleDataFrame.loc[sampleDataFrame["Range"] == SMEARTRAILING, "nmole/L"].to_list()[
+                        sampleDataFrame.loc[sampleDataFrame['Range'] == SMEARTRAILING, 'nmole/L'].to_list()[
+                            0] * 1000  # 从nmole/L转换为pmole/L
+                    totalMolarity = \
+                        sampleDataFrame.loc[sampleDataFrame['Range'] == SMEARTOTAL, 'nmole/L'].to_list()[
                             0] * 1000  # 从nmole/L转换为pmole/L
                     # 计算占比情况
-                    totalMolarity = adaptorMolarity + smallFragMolarity + averageFragMolarity
                     adaptorPercentage = safeDivide(adaptorMolarity, totalMolarity)
-                    smallFrafPercentage = safeDivide(smallFragMolarity, totalMolarity)
+                    smallFragPercentage = safeDivide(smallFragMolarity, totalMolarity)
                     trailingPercentage = safeDivide(trailingFragment, totalMolarity)
                     # 判断样品是否合格
                     result = ""
@@ -224,12 +233,12 @@ def caculateResult(DataFramePath: dict):
                         elif adaptorPercentage < 0.03:
                             pass
                         # 小片段情况判断
-                        if smallFrafPercentage >= 0.1:
+                        if smallFragPercentage >= 0.1:
                             if len(result) > 0:
                                 result += ";小片段污染"
                             else:
                                 result += "小片段污染"
-                        elif smallFrafPercentage < 0.1:
+                        elif smallFragPercentage < 0.1:
                             pass
                         # 文库大小判断
                         if determineFragment < 260:
@@ -288,7 +297,7 @@ def caculateResult(DataFramePath: dict):
                     excelDict = {"孔号": wellID,
                                  "文库号": sampleID,
                                  "片段大小": round(averageFragment),
-                                 "质量浓度": round(averageFragConc),
+                                 "质量浓度": round(averageFragConcentration),
                                  "摩尔浓度": round(averageFragMolarity),
                                  "结果": result,
                                  "判定": judge,
