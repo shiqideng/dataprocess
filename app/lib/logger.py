@@ -3,7 +3,7 @@ import logging.handlers
 import requests
 
 
-from app.lib import Module
+from app.lib import module
 
 
 # 配置日志记录器

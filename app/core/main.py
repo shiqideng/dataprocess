@@ -3,16 +3,15 @@ import sys
 import os
 import re
 import glob
-import time
 
 # 第三方库
 from PySide6.QtWidgets import QWidget, QFileDialog, QHeaderView
-from PySide6.QtCore import QStandardPaths, Slot, Qt, QTimer
+from PySide6.QtCore import QStandardPaths, Slot, Qt
 from openpyxl import Workbook, load_workbook
 
 # 本地包
 from app.ui.Ui_MainWindow import Ui_Form
-from app.lib import Module, logger
+from app.lib import logger, caculat
 
 
 class MainWindow(QWidget, Ui_Form):
@@ -54,7 +53,7 @@ class MainWindow(QWidget, Ui_Form):
             getattr(self, lineEditName).setText(filePath)
         else:
             logger.logger.info("用户取消了文件夹选择操作或出现了错误。")
-            self.logTextBrowser.append(Module.logFormat("INFO", "用户取消了文件夹选择操作或出现了错误。"))
+            self.logTextBrowser.append(caculat.logFormat("INFO", "用户取消了文件夹选择操作或出现了错误。"))
 
     def exportToExcel(self):
         if self.analysis5400Status:
@@ -138,17 +137,17 @@ class MainWindow(QWidget, Ui_Form):
                 wb.save(exportResultPath)
 
                 # 更新日志和消息框
-                log_message = Module.logFormat("INFO",
+                log_message = caculat.logFormat("INFO",
                                                f'可上传数据已成功导出到{exportResultPath}!\n 分析数据已成功导出至{caculateResultPath}!\n 请检查数据是否正确。')
                 self.logTextBrowser.append(log_message)
                 logger.logger.info(log_message)
-                self.messagebox = Module.MessageBox(Icon="Information", text=log_message)
+                self.messagebox = caculat.MessageBox(Icon="Information", text=log_message)
                 self.messagebox.show()
             elif filePath["reg"] == 0:
                 logger.logger.error(filePath["msg"])
-                self.logTextBrowser.append(Module.logFormat("ERROR", filePath["msg"]))
+                self.logTextBrowser.append(caculat.logFormat("ERROR", filePath["msg"]))
         else:
-            self.messagebox = Module.MessageBox(Icon="Warning", text="未分析数据，无法导出结果！")
+            self.messagebox = caculat.MessageBox(Icon="Warning", text="未分析数据，无法导出结果！")
             self.messagebox.show()
 
     def handleIndexChanged(self):
@@ -173,24 +172,24 @@ class MainWindow(QWidget, Ui_Form):
                         "input_folder": self.Import5400FilePathLineEdit.text(),
                         "output_folder": self.Export5400FilePathLineEdit.text(),
                     }
-                    rename = Module.reNameImage(params)
+                    rename = caculat.reNameImage(params)
                     if rename["reg"] == 1:
-                        self.logTextBrowser.append(Module.logFormat("INFO", "图片重命名成功！"))
+                        self.logTextBrowser.append(caculat.logFormat("INFO", "图片重命名成功！"))
                         logger.logger.info("图片重命名成功！")
                         self.upDatePrograssBar(20)
                     elif rename["reg"] == 0:
-                        self.logTextBrowser.append(Module.logFormat("ERROR", rename["msg"]))
+                        self.logTextBrowser.append(caculat.logFormat("ERROR", rename["msg"]))
                         logger.logger.error(rename["msg"])
 
                 if filePath["reg"] == 1:
                     self.saveName = filePath["msg"]["saveName"]
                     self.upDatePrograssBar(30)
-                    self.logTextBrowser.append(Module.logFormat("INFO", f"保存名称：{self.saveName}.xlsx"))
+                    self.logTextBrowser.append(caculat.logFormat("INFO", f"保存名称：{self.saveName}.xlsx"))
                     logger.logger.info(f"文库计算结果保存名称：{self.saveName}.xlsx")
                     if self.SampleType5400ComboBox.currentText() == "核酸":
                         pass
                     elif self.SampleType5400ComboBox.currentText() == "文库":
-                        self.logTextBrowser.append(Module.logFormat("INFO", "正在处理准备文库数据..."))
+                        self.logTextBrowser.append(caculat.logFormat("INFO", "正在处理准备文库数据..."))
                         logger.logger.info("正在处理准备文库数据...")
                         global qualityTablePth
                         qualityTablePth = filePath["msg"]["qualityTable"]
@@ -198,28 +197,28 @@ class MainWindow(QWidget, Ui_Form):
                         smearTablePath = filePath["msg"]["smearTable"]
                         filePath = {"SampleType": "文库", "qualityTablepath": qualityTablePth,
                                     "smearTablepath": smearTablePath}
-                        self.worker = Module.caculateResult(filePath)
+                        self.worker = caculat.caculateResult(filePath)
                         if self.worker["reg"] == 1:
                             self.upDatePrograssBar(40)
-                            # ResultModule = self.worker.prograssChange.connect(self.upDatePrograssBar)
-                            self.logTextBrowser.append(Module.logFormat("INFO", "开始计算文库数据..."))
-                            Result = Module.createModel({"type": 1, "path": self.worker["msg"]})
+                            # Resultcaculat = self.worker.prograssChange.connect(self.upDatePrograssBar)
+                            self.logTextBrowser.append(caculat.logFormat("INFO", "开始计算文库数据..."))
+                            Result = caculat.createModel({"type": 1, "path": self.worker["msg"]})
                             logger.logger.info("文库数据计算完成")
-                            self.logTextBrowser.append(Module.logFormat("INFO", "文库数据计算完成"))
+                            self.logTextBrowser.append(caculat.logFormat("INFO", "文库数据计算完成"))
                             self.upDatePrograssBar(90)
                             # self.ResultTableLabChip5400TableView.setModel(LabChipResult)
                             self.ResultTableAgilent5400TableView.setModel(Result)
                             # 结果判定下拉列表选择
-                            # judgeList = Module.getConfig('conf/config.ini','Judge', 'judge')["msg"].split(",")
-                            # self.ResultTableAgilent5400TableView.setItemDelegateForColumn(6,Module.MyComboBoxDelegate(judgeList, self.ResultTableAgilent5400TableView))
+                            # judgeList = caculat.getConfig('conf/config.ini','Judge', 'judge')["msg"].split(",")
+                            # self.ResultTableAgilent5400TableView.setItemDelegateForColumn(6,caculat.MyComboBoxDelegate(judgeList, self.ResultTableAgilent5400TableView))
                             self.upDatePrograssBar(99)
-                            self.logTextBrowser.append(Module.logFormat("INFO", "显示数据..."))
+                            self.logTextBrowser.append(caculat.logFormat("INFO", "显示数据..."))
                             self.upDatePrograssBar(100)
-                            self.messageBox = Module.MessageBox(Icon="Information", text="计算完成")
+                            self.messageBox = caculat.MessageBox(Icon="Information", text="计算完成")
                             self.analysis5400Status = True
                         elif self.worker["reg"] == 0:
-                            self.messageBox = Module.MessageBox(Icon="Critical", text="计算失败")
-                            self.logTextBrowser.append(Module.logFormat("ERROR", self.worker["msg"]))
+                            self.messageBox = caculat.MessageBox(Icon="Critical", text="计算失败")
+                            self.logTextBrowser.append(caculat.logFormat("ERROR", self.worker["msg"]))
                             logger.logger.error(self.worker["msg"])
                         # 设置表格行和列自适应
                         self.ResultTableLabChip5400TableView.horizontalHeader().setSectionResizeMode(
@@ -233,21 +232,21 @@ class MainWindow(QWidget, Ui_Form):
                         self.ResultTableAgilent5400TableView.resizeColumnsToContents()
 
                 else:
-                    self.logTextBrowser.append(Module.logFormat("ERROR", str(filePath["msg"])))
+                    self.logTextBrowser.append(caculat.logFormat("ERROR", str(filePath["msg"])))
                     logger.logger.error(str(filePath["msg"]))
             except IOError:
-                self.logTextBrowser.append(Module.logFormat("ERROR", "部分文件存在异常" + str(IOError)))
+                self.logTextBrowser.append(caculat.logFormat("ERROR", "部分文件存在异常" + str(IOError)))
                 logger.logger.error("部分文件存在异常" + str(IOError))
             except Exception as e:
-                self.logTextBrowser.append(Module.logFormat("ERROR", "发生意外错误" + str(e)))
+                self.logTextBrowser.append(caculat.logFormat("ERROR", "发生意外错误" + str(e)))
                 logger.logger.error("发生意外错误" + str(e))
         else:
-            self.logTextBrowser.append(Module.logFormat("ERROR", "请选择导入文件路径。"))
+            self.logTextBrowser.append(caculat.logFormat("ERROR", "请选择导入文件路径。"))
             logger.logger.error("未选择导入文件路径。")
         self.ReName5400CheckBox.setChecked(False)
 
     def clear5400(self):
-        self.messagebox = Module.MessageBox(Icon="Question", text="确定清空所有数据吗？")
+        self.messagebox = caculat.MessageBox(Icon="Question", text="确定清空所有数据吗？")
         self.messagebox.resultReady.connect(self.handleResultReady)
         self.messagebox.show()
 
@@ -286,17 +285,17 @@ class MainWindow(QWidget, Ui_Form):
                 if filePath["reg"] == 1:
                     self.saveName = filePath["msg"]["saveName"]
                     if self.SampleType5400ComboBox.currentText() == "核酸":
-                        self.logTextBrowser.append(Module.logFormat("INFO", "核酸分析暂未支持，请等待后续升级！"))
-                        self.messageBox = Module.MessageBox(Icon="Warning", text="核酸结果分析暂未支持，请等待后续升级！")
+                        self.logTextBrowser.append(caculat.logFormat("INFO", "核酸分析暂未支持，请等待后续升级！"))
+                        self.messageBox = caculat.MessageBox(Icon="Warning", text="核酸结果分析暂未支持，请等待后续升级！")
                         self.messageBox.show()
 
-                        # self.logTextBrowser.append(Module.logFormat("INFO", "qualityTablePath:" + str(filePath["msg"]["qualityTable"])))
-                        # self.logTextBrowser.append(Module.logFormat("INFO", "smearTablePath:" + str(filePath["msg"]["smearTable"])))
-                        # self.logTextBrowser.append(Module.logFormat("INFO", "peakTablePath:" + str(filePath["msg"]["peakTable"])))
+                        # self.logTextBrowser.append(caculat.logFormat("INFO", "qualityTablePath:" + str(filePath["msg"]["qualityTable"])))
+                        # self.logTextBrowser.append(caculat.logFormat("INFO", "smearTablePath:" + str(filePath["msg"]["smearTable"])))
+                        # self.logTextBrowser.append(caculat.logFormat("INFO", "peakTablePath:" + str(filePath["msg"]["peakTable"])))
 
                         # global qualityTablepath
                         # qualityTablePath = filePath["msg"]["qualityTable"]
-                        # quality = Module.createModel(qualityTablePath)
+                        # quality = caculat.createModel(qualityTablePath)
                         # self.QualityTable5400TableView.setModel(quality)
                         # # 设置表格行和列自适应
                         # self.QualityTable5400TableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -304,7 +303,7 @@ class MainWindow(QWidget, Ui_Form):
 
                         # global smearTablepath
                         # smearTablePath = filePath["msg"]["smearTable"]
-                        # smear = Module.createModel(smearTablePath)
+                        # smear = caculat.createModel(smearTablePath)
                         # self.SmearTable5400TableView.setModel(smear)
                         # # 设置表格行和列自适应
                         # self.SmearTable5400TableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -312,22 +311,22 @@ class MainWindow(QWidget, Ui_Form):
 
                         # global peakTablePath
                         # peakTablePath = filePath["msg"]["peakTable"]
-                        # peak =Module.createModel(peakTablePath)
+                        # peak =caculat.createModel(peakTablePath)
                         # self.PeakTable5400TableView.setModel(peak)
                         # # 设置表格行和列自适应
                         # self.PeakTable5400TableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
                         # self.PeakTable5400TableView.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
                     elif self.SampleType5400ComboBox.currentText() == "文库":
-                        # self.logTextBrowser.append(Module.logFormat("INFO", "qualityTablePath:" + str(filePath["msg"]["qualityTable"])))
+                        # self.logTextBrowser.append(caculat.logFormat("INFO", "qualityTablePath:" + str(filePath["msg"]["qualityTable"])))
                         self.logTextBrowser.append(
-                            Module.logFormat("INFO", "smearTablePath:" + str(filePath["msg"]["smearTable"])))
+                            caculat.logFormat("INFO", "smearTablePath:" + str(filePath["msg"]["smearTable"])))
                         logger.logger.info("smearTablePath:" + str(filePath["msg"]["smearTable"]))
 
                         # # 预览QualityTable
                         # global qualityTablepath
                         # qualityTablepath = filePath["msg"]["qualityTable"]
-                        # quality = Module.createModel({"type": 2, "path":qualityTablepath})
+                        # quality = caculat.createModel({"type": 2, "path":qualityTablepath})
                         # self.QualityTable5400TableView.setModel(quality)
                         # # 设置表格行和列自适应
                         # self.QualityTable5400TableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -336,7 +335,7 @@ class MainWindow(QWidget, Ui_Form):
 
                         global smearTablepath
                         smearTablepath = filePath["msg"]["smearTable"]
-                        smear = Module.createModel({"type": 2, "path": smearTablepath})
+                        smear = caculat.createModel({"type": 2, "path": smearTablepath})
                         self.SmearTable5400TableView.setModel(smear)
                         # 设置表格行和列自适应
                         self.SmearTable5400TableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -344,26 +343,26 @@ class MainWindow(QWidget, Ui_Form):
 
 
                 else:
-                    self.logTextBrowser.append(Module.logFormat("ERROR", str(filePath["msg"])))
+                    self.logTextBrowser.append(caculat.logFormat("ERROR", str(filePath["msg"])))
                     logger.logger.error(str(filePath["msg"]))
             except IOError:
-                self.logTextBrowser.append(Module.logFormat("ERROR", "部分文件存在异常" + str(IOError)))
+                self.logTextBrowser.append(caculat.logFormat("ERROR", "部分文件存在异常" + str(IOError)))
                 logger.logger.error("部分文件存在异常" + str(IOError))
             except Exception as e:
-                self.logTextBrowser.append(Module.logFormat("ERROR", "发生意外错误" + str(e)))
+                self.logTextBrowser.append(caculat.logFormat("ERROR", "发生意外错误" + str(e)))
                 logger.logger.error("发生意外错误" + str(e))
         else:
-            self.logTextBrowser.append(Module.logFormat("ERROR", "请选择导入文件路径。"))
+            self.logTextBrowser.append(caculat.logFormat("ERROR", "请选择导入文件路径。"))
             logger.logger.error("未选择导入文件路径。")
 
     def getSystem(self):
         try:
             if sys.platform == 'linux' or sys.platform == 'darwin':
-                importPath = Module.getConfig('conf/config.ini', 'Import Paths', 'linux_path')
-                exportPath = Module.getConfig('conf/config.ini', 'Export Paths', 'linux_path')
+                importPath = caculat.getConfig('conf/config.ini', 'Import Paths', 'linux_path')
+                exportPath = caculat.getConfig('conf/config.ini', 'Export Paths', 'linux_path')
             elif sys.platform == 'win32':
-                importPath = Module.getConfig('conf/config.ini', 'Import Paths', 'win32_path')
-                exportPath = Module.getConfig('conf/config.ini', 'Export Paths', 'win32_path')
+                importPath = caculat.getConfig('conf/config.ini', 'Import Paths', 'win32_path')
+                exportPath = caculat.getConfig('conf/config.ini', 'Export Paths', 'win32_path')
             # 使用 os.path.join 来构造路径，即使这里的路径已经是完整的
             importPath = os.path.join(importPath["msg"])
             exportPath = os.path.join(exportPath["msg"])
@@ -373,7 +372,7 @@ class MainWindow(QWidget, Ui_Form):
                 self.Export5400FilePathLineEdit.setText(exportPath)
         except Exception as e:
             # 在这里处理可能的异常，比如读取配置文件失败、路径不存在等
-            self.logTextBrowser.append(Module.logFormat("ERROR", str(e)))
+            self.logTextBrowser.append(caculat.logFormat("ERROR", str(e)))
             logger.logger.error(str(e))
 
     def upDatePrograssBar(self, value):
@@ -382,13 +381,13 @@ class MainWindow(QWidget, Ui_Form):
     @Slot(dict)
     def handleResultReady(self, message):
         if message["reg"] == 1:
-            self.logTextBrowser.append(Module.logFormat("INFO", "用户确认清除内容"))
+            self.logTextBrowser.append(caculat.logFormat("INFO", "用户确认清除内容"))
             logger.logger.info("用户确认清空内容")
             self.clearData()
             # self.logOperationSuccess()
         else:
             # self.logOperationCancelled()
-            self.logTextBrowser.append(Module.logFormat("ERROR", str(message["msg"])))
+            self.logTextBrowser.append(caculat.logFormat("ERROR", str(message["msg"])))
             logger.logger.error(str(message["msg"]))
 
 
