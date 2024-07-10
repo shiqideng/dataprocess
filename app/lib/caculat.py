@@ -157,6 +157,15 @@ def caculateResult(DataFramePath: dict):
             smearTable = detectEncoding(DataFramePath["smearTablePath"])
             peakTable = detectEncoding(DataFramePath["peakTablePath"])
             column = ["Well", "Sample ID", "Range", "ng/uL", "nmole/L", "Avg. Size"]
+            # 修改判定规则， 按照样本类型，使用质量浓度计算各Smear区间占比，最后输出判定结果
+            Smear1 = "100 bp to 150 bp"
+            Smear2 = "150 bp to 260 bp"
+            Smear3 = "200 bp to 350 bp"
+            Smear4 = "350 bp to 600 bp"
+            Smear5 = "400 bp to 600 bp"
+            Smear6 = "650 bp to 1000 bp"
+            Smear7 = "200 bp to 1000 bp"
+            Smear8 = "120 bp to 4700 bp"
             SMEARADAPTOR = "100 bp to 150 bp"
             SMEARSMALLFRAG = "150 bp to 260 bp"
             SMEARAVERAGWFRAG = "200 bp to 4000 bp"
