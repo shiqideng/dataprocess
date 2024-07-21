@@ -1,0 +1,23 @@
+<RCC>
+  <qresource prefix="Logo">
+    <file>logo.png</file>
+    <file>logo.ico</file>
+  </qresource>
+  <qresource prefix="Icon">
+    <file>ORF cDNA Clones.png</file>
+    <file>RNA.png</file>
+    <file>基因.png</file>
+    <file>Minimize-2.png</file>
+    <file>selection.png</file>
+    <file>setting.png</file>
+    <file>导出.png</file>
+    <file>关闭.png</file>
+    <file>开始.png</file>
+    <file>全屏.png</file>
+    <file>设置.png</file>
+    <file>数据管理1.png</file>
+    <file>折叠5.png</file>
+    <file>折叠6.png</file>
+    <file>最小化.png</file>
+  </qresource>
+</RCC>
