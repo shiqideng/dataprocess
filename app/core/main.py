@@ -9,7 +9,7 @@ from PySide6.QtWidgets import QWidget, QFileDialog, QHeaderView
 from PySide6.QtCore import QStandardPaths, Slot, Qt
 from openpyxl import Workbook, load_workbook
 
-# 本地包
+# 本地库
 from app.ui.Ui_MainWindow import Ui_Form
 from app.lib import logger, caculat
 

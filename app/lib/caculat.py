@@ -203,6 +203,10 @@ def caculateResult(DataFramePath: dict):
                 size = len(sampleDataFrame)
                 # 检查需要做判断的SmearPeak是否存在
                 if mask1.any() and mask2.any() and mask3.any() and mask4.any() and mask5.any():
+                    # 按照SampleID首字母拆分
+                    patternD = re.compile('^D01')
+                    patternW01 = re.compile('^W01')
+
                     adaptorMolarity = \
                         sampleDataFrame.loc[sampleDataFrame['Range'] == SMEARADAPTOR, 'nmole/L'].to_list()[
                             0] * 1000  # 从nmole/L转换为pmole/L
